@@ -19,7 +19,7 @@ table("test")
   .offset(10)
   .limit(5)
   .build();
-// SELECT `a`, `b` FROM `test` WHERE `a`=1 AND `b`=2 ORDER BY b DESC LIMIT 10,5
+// SELECT a, b FROM test WHERE a=1 AND b=2 ORDER BY b DESC LIMIT 10,5
 
 // join
 table("hello")
@@ -33,7 +33,7 @@ table("hello")
   .offset(2)
   .limit(3)
   .build();
-// SELECT `A`.*, `B`.* FROM `hello` AS `A` LEFT JOIN `world` AS `B` ON A.id=B.id WHERE 1 AND 2 LIMIT 2,3
+// SELECT "A".* FROM hello AS "A" LEFT JOIN world AS "B" ON A.id=B.id WHERE 1 AND 2 LIMIT 2,3
 
 // insert
 table("test1")
@@ -42,7 +42,7 @@ table("test1")
     b: 456,
   })
   .build();
-// INSERT INTO `test1` (`a`, `b`) VALUES (123, 456);
+// INSERT INTO test1 (a, b) VALUES (123, 456);
 
 // batch insert
 table("test1")
@@ -57,7 +57,7 @@ table("test1")
     },
   ])
   .build();
-// INSERT INTO `test1` (`a`, `b`) VALUES (123, 456),
+// INSERT INTO test1 (a, b) VALUES (123, 456),
 // (789, 110)");
 
 // update
@@ -71,7 +71,7 @@ table("test1")
   })
   .limit(12)
   .build();
-// UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12
+// UPDATE test1 SET a=123, b=456 WHERE b=777 LIMIT 12
 
 // insert onDuplicateKeyUpdate
 table("test1")
@@ -79,7 +79,7 @@ table("test1")
   .onDuplicateKeyUpdate()
   .set({ a: "xxx" })
   .build();
-// INSERT INTO `test1` (`a`, `b`) VALUES (123, 456) ON DUPLICATE KEY UPDATE `a`='xxx'
+// INSERT INTO test1 (a, b) VALUES (123, 456) ON DUPLICATE KEY UPDATE a='xxx'
 
 // delete
 table("test1")
@@ -89,20 +89,20 @@ table("test1")
   })
   .limit(12)
   .build();
-// DELETE FROM `test1` WHERE `b`=777 LIMIT 12
+// DELETE FROM test1 WHERE b=777 LIMIT 12
 
 // sub query
-table("test1")
+table("Test_2")
   .select("*")
   .where("a=? AND b IN ???", [
     123,
-    table("test2")
+    table("test3")
       .select("id")
       .where({ id: { $lt: 10 } })
       .limit(100),
   ])
   .build();
-// SELECT * FROM `test1` WHERE a=123 AND b IN (SELECT `id` FROM `test2` WHERE `id`<10 LIMIT 100)
+// SELECT * FROM "Test_2" WHERE a=123 AND b IN (SELECT id FROM test2 WHERE id<10 LIMIT 100)
 
 // clone query
 const q = table("test1")
@@ -113,12 +113,12 @@ q.clone()
   .offset(10)
   .limit(20)
   .build();
-// SELECT * FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10,20
+// SELECT * FROM test1 WHERE a=123 AND b=456 LIMIT 10,20
 q.clone()
   .where({ b: 789, c: 666 })
   .orderBy("a DESC")
   .build();
-// SELECT * FROM `test1` WHERE `a`=123 AND `b`=789 AND `c`=666 ORDER BY a DESC
+// SELECT * FROM test1 WHERE a=123 AND b=789 AND c=666 ORDER BY a DESC
 
 // query with expr
 table("test")
@@ -131,7 +131,7 @@ table("test")
       .or("d=:d", { d: 666 }),
   )
   .build();
-// SELECT * FROM `test` WHERE (a=123 OR `b`=456 AND `c` IN (789) OR d=666)
+// SELECT * FROM test WHERE (a=123 OR b=456 AND c IN (789) OR d=666)
 ```
 
 ## Usege with Postgres
