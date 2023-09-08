@@ -1,5 +1,6 @@
 import { AssertionError, assertStrictEquals, assertThrows } from "assert";
 import Q from "./mod.ts";
+import Messages from "./messages.ts";
 
 Deno.test("query format - simple", () => {
   assertStrictEquals(Q.table("test1").format('"a"'), '"a"');
@@ -475,7 +476,7 @@ Deno.test("query insert or update - onDuplicateKeyUpdate error", () => {
         .set({ a: "xxx" })
         .build(),
     AssertionError,
-    "onDuplicateKeyUpdate() must inserted one row, but accutal is 2 rows",
+    Messages.functionWithWrongRowCount("onDuplicateKeyUpdate", 2),
   );
 });
 Deno.test("query insert or update - onDuplicateKeyUpdate insert only", () => {
@@ -608,36 +609,36 @@ Deno.test("query options - skip limit", () => {
   );
 });
 
-Deno.test("query where(condition): condition for modify operation cannot be empty", () => {
+Deno.test(`query where(condition): ${Messages.conditionCannotBeEmpty}`, () => {
   // SELECT 操作可以为空
   const sql = Q.table("test1").select("name", "age").where({}).build();
   // utils.debug(sql);
   assertStrictEquals(sql, "SELECT `name`, `age` FROM `test1`");
 });
-Deno.test("query where(condition): condition for modify operation cannot be empty", () => {
+Deno.test(`query where(condition): ${Messages.conditionCannotBeEmpty}`, () => {
   const sql = Q.table("test1").select("name", "age").where("   ").build();
   // utils.debug(sql);
   assertStrictEquals(sql, "SELECT `name`, `age` FROM `test1`");
 });
 // 其他操作不能为空
-Deno.test("query where(condition): condition for modify operation cannot be empty", () => {
+Deno.test(`query where(condition): ${Messages.conditionCannotBeEmpty}`, () => {
   assertThrows(
     () => {
       const sql = Q.table("test1").update({ a: 123 }).where({}).build();
       //   utils.debug(sql);
     },
     AssertionError,
-    "condition for modify operation cannot be empty",
+    Messages.conditionCannotBeEmpty,
   );
 });
-Deno.test("query where(condition): condition for modify operation cannot be empty", () => {
+Deno.test(`query where(condition): ${Messages.conditionCannotBeEmpty}`, () => {
   assertThrows(
     () => {
       const sql = Q.table("test1").delete().where("   ").build();
       //   utils.debug(sql);
     },
     AssertionError,
-    "condition for modify operation cannot be empty",
+    Messages.conditionCannotBeEmpty,
   );
 });
 
@@ -651,7 +652,7 @@ Deno.test("query where(condition): condition key cannot be undefined", () => {
       //   utils.debug(sql);
     },
     AssertionError,
-    "found undefined value for condition keys b; it may caused unexpected errors",
+    Messages.undefinedValueConditionalKeys(["b"]),
   );
 });
 Deno.test("query where(condition): condition key cannot be undefined", () => {
@@ -664,7 +665,7 @@ Deno.test("query where(condition): condition key cannot be undefined", () => {
       //   utils.debug(sql);
     },
     AssertionError,
-    "found undefined value for condition keys c,d; it may caused unexpected errors",
+    Messages.undefinedValueConditionalKeys(["c", "d"]),
   );
 });
 

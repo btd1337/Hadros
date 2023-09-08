@@ -1,8 +1,4 @@
-/**
- * SqlString
- * Simple SQL escape and format for MySQL
- * @link https://github.com/mysqljs/sqlstring
- */
+
 const ID_GLOBAL_REGEXP = /`/g;
 const QUAL_GLOBAL_REGEXP = /\./g;
 const CHARS_GLOBAL_REGEXP = /[\0\b\t\n\r\x1a\"\'\\]/g;
@@ -18,7 +14,30 @@ const CHARS_ESCAPE_MAP = {
   "\\": "\\\\",
 } as Record<string, string>;
 
+/**
+ * SqlString
+ * Simple SQL escape and format for MySQL
+ * @link https://github.com/mysqljs/sqlstring
+ */
 export default class SqlString {
+  /**
+   * Escapes an identifier for safe use in SQL queries.
+   *
+   * @param val - The identifier to be escaped.
+   * @param forbidQualified - Optional. If true, forbids qualified identifiers (e.g., "table.column").
+   * @returns The escaped identifier as a string.
+   * @throws Throws an error if invalid input is provided.
+   *
+   * @example
+   * ```typescript
+   * SqlString.escapeId("column"); // Returns "`column`"
+   * ```
+   *
+   * @example
+   * ```typescript
+   * SqlString.escapeId("table.column", true); // Returns "`table.column`"
+   * ```
+   */
   static escapeId(val: any, forbidQualified?: boolean): string {
     if (Array.isArray(val)) {
       let sql = "";
@@ -41,6 +60,24 @@ export default class SqlString {
     }
   }
 
+  /**
+   * Escapes a value for safe use in SQL queries.
+   *
+   * @param val - The value to be escaped.
+   * @param stringifyObjects - Optional. If true, converts objects to their string representations.
+   * @param timeZone - Optional. The time zone to use for date formatting.
+   * @returns The escaped value as a string.
+   *
+   * @example
+   * ```typescript
+   * SqlString.escape("Hello, 'world'!"); // Returns "'Hello, \\'world\\'!'"
+   * ```
+   *
+   * @example
+   * ```typescript
+   * SqlString.escape(new Date(), true, "UTC"); // Returns "'2023-09-07 12:34:56.789'"
+   * ```
+   */
   static escape(val: any, stringifyObjects?: boolean, timeZone?: string) {
     if (val === undefined || val === null) {
       return "NULL";
@@ -68,6 +105,20 @@ export default class SqlString {
     }
   }
 
+  /**
+   * Converts an array to a list of escaped and formatted values for use in SQL queries.
+   *
+   * @param array - The array to be converted.
+   * @param timeZone - Optional. Timezone for date conversion (default is "local").
+   * @returns The array converted to a list of SQL values.
+   *
+   * @example
+   * ```typescript
+   * const values = [1, 'John', new Date()];
+   * const sqlValues = SqlString.arrayToList(values);
+   * console.log(sqlValues); // Outputs: `'1, 'John', '2023-09-07 12:34:56.789'`
+   * ```
+   */
   static arrayToList(array: any[], timeZone?: string) {
     let sql = "";
 
@@ -86,6 +137,23 @@ export default class SqlString {
     return sql;
   }
 
+  /**
+   * Formats a SQL query string with provided values.
+   *
+   * @param sql - The SQL query string with placeholders.
+   * @param vals - An object or an array of values to replace the placeholders.
+   * @param stringifyObjects - Optional. If true, objects will be stringified (default is false).
+   * @param timeZone - Optional. Timezone for date conversion (default is "local").
+   * @returns The formatted SQL query as a string.
+   *
+   * @example
+   * ```typescript
+   * const sql = "SELECT * FROM users WHERE id = ?";
+   * const values = [42];
+   * const formattedSql = SqlString.format(sql, values);
+   * console.log(formattedSql); // Outputs: `'SELECT * FROM users WHERE id = 42'`
+   * ```
+   */
   static format(
     sql: string,
     vals?: object | any[],
@@ -135,6 +203,20 @@ export default class SqlString {
     return result;
   }
 
+  /**
+   * Converts a JavaScript Date object to a formatted date string for SQL queries.
+   *
+   * @param date - The Date object to be converted.
+   * @param timeZone - Optional. Timezone for date conversion (default is "local").
+   * @returns The escaped date as a string.
+   *
+   * @example
+   * ```typescript
+   * const currentDate = new Date();
+   * const escapedDate = SqlString.dateToString(currentDate);
+   * console.log(escapedDate); // Outputs a formatted date string.
+   * ```
+   */
   static dateToString(date: string | number | Date, timeZone: string) {
     const dt = new Date(date);
 
@@ -192,6 +274,20 @@ export default class SqlString {
     return escapeString(str);
   }
 
+  /**
+   * Converts an object to a list of key-value pairs for use in SQL queries.
+   *
+   * @param object - The object to be converted.
+   * @param timeZone - Optional. Timezone for date conversion (default is "local").
+   * @returns The object converted to a list of SQL key-value pairs.
+   *
+   * @example
+   * ```typescript
+   * const data = { name: "John", age: 30 };
+   * const sqlValues = SqlString.objectToValues(data);
+   * console.log(sqlValues); // Outputs: `'name = 'John', age = 30'`
+   * ```
+   */
   static objectToValues(object: Record<string, any>, timeZone?: string) {
     let sql = "";
 
@@ -210,6 +306,19 @@ export default class SqlString {
     return sql;
   }
 
+  /**
+   * Creates a raw SQL string that won't be escaped.
+   *
+   * @param sql - The raw SQL query string.
+   * @returns An object with a `toSqlString` method that returns the raw SQL string.
+   *
+   * @example
+   * ```typescript
+   * const rawSql = "SELECT * FROM users";
+   * const rawQuery = SqlString.raw(rawSql);
+   * console.log(rawQuery.toSqlString()); // Outputs the raw SQL string.
+   * ```
+   */
   static raw(sql: string) {
     if (typeof sql !== "string") {
       throw new TypeError("argument sql must be a string");
@@ -223,6 +332,19 @@ export default class SqlString {
   }
 }
 
+/**
+ * Escapes special characters in a string to make it safe for use in SQL queries.
+ *
+ * @param val - The string to be escaped.
+ * @returns The escaped string enclosed in single quotes.
+ *
+ * @example
+ * ```typescript
+ * const input = "John's data";
+ * const escaped = escapeString(input);
+ * console.log(escaped); // Outputs: `'John\\'s data'`
+ * ```
+ */
 function escapeString(val: string) {
   let chunkIndex = (CHARS_GLOBAL_REGEXP.lastIndex = 0);
   let escapedVal = "";
@@ -246,6 +368,20 @@ function escapeString(val: string) {
   return `'${escapedVal}'`;
 }
 
+/**
+ * Pads a number with leading zeros to a specified length.
+ *
+ * @param num - The number to be padded.
+ * @param length - The desired length of the padded number.
+ * @returns The number as a string with leading zeros.
+ *
+ * @example
+ * ```typescript
+ * const number = 5;
+ * const paddedNumber = zeroPad(number, 2);
+ * console.log(paddedNumber); // Outputs: '05'
+ * ```
+ */
 function zeroPad(num: number, length: number) {
   let number = num.toString();
   while (number.length < length) {
@@ -255,6 +391,19 @@ function zeroPad(num: number, length: number) {
   return number;
 }
 
+/**
+ * Converts a timezone offset string to minutes.
+ *
+ * @param tz - The timezone offset string, e.g., '+02:30' or 'Z'.
+ * @returns The timezone offset in minutes, or 0 for 'Z' (UTC).
+ *
+ * @example
+ * ```typescript
+ * const timezoneOffset = "+02:30";
+ * const minutes = convertTimezone(timezoneOffset);
+ * console.log(minutes); // Outputs: 150
+ * ```
+ */
 function convertTimezone(tz: string) {
   if (tz === "Z") {
     return 0;

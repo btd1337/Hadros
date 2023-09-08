@@ -95,7 +95,7 @@ Deno.test("utils sqlConditionString - build() function", () => {
   assertThrows(
     () => sqlConditionStrings({ a: { $in: new TestQuery2() } }),
     AssertionError,
-    "build() must returns a string",
+    "build() must return a string",
   );
 });
 
@@ -111,7 +111,7 @@ Deno.test("utils sqlConditionString - build() return string", () => {
   assertThrows(
     () => sqlConditionStrings({ a: { $notIn: new TestQuery2() } }),
     AssertionError,
-    "build() must returns a string",
+    "build() must return a string",
   );
 });
 
@@ -157,7 +157,7 @@ Deno.test("utils sqlFormat - object error", () => {
   assertThrows(
     () => sqlFormat("???", [new TestQuery2()]),
     AssertionError,
-    "build() must returns a string",
+    "build() must return a string",
   );
 });
 
@@ -195,7 +195,7 @@ Deno.test("utils sqlFormat - class error", () => {
   assertThrows(
     () => sqlFormatObject(":::a", { a: new TestQuery2() }),
     AssertionError,
-    "build() must returns a string",
+    "build() must return a string",
   );
 });
 

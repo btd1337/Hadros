@@ -8,34 +8,74 @@ import {
 } from "./common.ts";
 import { Expression } from "./expr.ts";
 import { assert } from "assert";
+import Messages from "./messages.ts";
 
+/**
+ * A versatile query builder for constructing and executing SQL queries.
+ *
+ * @typeparam Q - The type of the data rows returned by the query.
+ * @typeparam R - The type of the query result (e.g., number of affected rows for INSERT/UPDATE/DELETE).
+ */
 export class QueryBuilder<Q = DataRow, R = any> {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * 表达式构造器
+   * Creates a new Expression builder.
+   * @returns A new Expression builder instance.
+   * @remarks
+   * This method provides a way to create and build SQL expressions.
+   *
+   * @example
+   * ```typescript
+   * const expression = QueryBuilder.expr();
+   * ```
    */
   public static expr(): Expression {
     return new Expression();
   }
 
   /**
-   * 创建新Query，设置表名
+   * Creates a new QueryBuilder and sets the primary table name.
+   * @param name - The name of the primary table for the query.
+   * @returns A new QueryBuilder instance with the primary table name set.
+   * @remarks
+   * This method initializes a new query and sets the primary table for subsequent operations.
+   *
+   * @example
+   * ```typescript
+   * const query = QueryBuilder.table("users");
+   * ```
    */
   public static table<Q = DataRow, R = any>(name: string): QueryBuilder<Q, R> {
     return new QueryBuilder().table(name);
   }
 
   /**
-   * 更新
+   * Creates a new QueryBuilder for performing UPDATE operations.
+   * @returns A new QueryBuilder instance configured for UPDATE operations.
+   * @remarks
+   * This method initializes a new query for performing table updates.
+   *
+   * @example
+   * ```typescript
+   * const updateQuery = QueryBuilder.update();
+   * ```
    */
   public static update<Q = DataRow, R = any>(): QueryBuilder<Q, R> {
     return new QueryBuilder().update();
   }
 
   /**
-   * 查询
-   * @param fields
+   * Creates a new SELECT query.
+   * @param fields - The list of fields to be selected in the query.
+   * @returns A new QueryBuilder instance configured for SELECT operations.
+   * @remarks
+   * This method initializes a new query for retrieving data from the database.
+   *
+   * @example
+   * ```typescript
+   * const selectQuery = QueryBuilder.select("id", "name", "email");
+   * ```
    */
   public static select<Q = DataRow, R = any>(
     ...fields: string[]
@@ -44,8 +84,16 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 查询
-   * @param fields
+   * Creates a new SELECT DISTINCT query.
+   * @param fields - The list of fields to be selected uniquely in the query.
+   * @returns A new QueryBuilder instance configured for SELECT DISTINCT operations.
+   * @remarks
+   * This method initializes a new query for retrieving distinct data from the database.
+   *
+   * @example
+   * ```typescript
+   * const distinctQuery = QueryBuilder.selectDistinct("category");
+   * ```
    */
   public static selectDistinct<Q = DataRow, R = any>(
     ...fields: string[]
@@ -54,8 +102,16 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 插入
-   * @param data 数据
+   * Creates a new INSERT query.
+   * @param data - The data to be inserted into the table.
+   * @returns A new QueryBuilder instance configured for INSERT operations.
+   * @remarks
+   * This method initializes a new query for inserting data into the database.
+   *
+   * @example
+   * ```typescript
+   * const insertQuery = QueryBuilder.insert({ name: "John", age: 30 });
+   * ```
    */
   public static insert<Q = DataRow, R = any>(
     data: Array<Partial<Q>> | Partial<Q>,
@@ -64,7 +120,15 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 删除
+   * Creates a new DELETE query.
+   * @returns A new QueryBuilder instance configured for DELETE operations.
+   * @remarks
+   * This method initializes a new query for deleting data from the database.
+   *
+   * @example
+   * ```typescript
+   * const deleteQuery = QueryBuilder.delete();
+   * ```
    */
   public static delete<Q = DataRow, R = any>(): QueryBuilder<Q, R> {
     return new QueryBuilder().delete();
@@ -104,7 +168,14 @@ export class QueryBuilder<Q = DataRow, R = any> {
   };
 
   /**
-   * 创建 QueryBuilder
+   * Creates a new instance of QueryBuilder.
+   * @remarks
+   * This constructor initializes a new QueryBuilder instance with default settings.
+   *
+   * @example
+   * ```typescript
+   * const queryBuilder = new QueryBuilder();
+   * ```
    */
   constructor() {
     this._data = {
@@ -132,7 +203,16 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 克隆当前QueryBuilder
+   * Creates a clone of the current QueryBuilder instance.
+   * @returns A new QueryBuilder instance with the same configuration as the original.
+   * @remarks
+   * This method is useful for creating a copy of an existing query builder to make variations.
+   *
+   * @example
+   * ```typescript
+   * const original = new QueryBuilder().table("users").select("name");
+   * const clone = original.clone().where("age > 30");
+   * ```
    */
   public clone(): QueryBuilder {
     const q = new QueryBuilder();
@@ -141,23 +221,56 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 格式化模板字符串
-   * @param tpl 模板字符串
+   * Formats a template string with optional values.
+   * @param tpl - The template string to format.
+   * @param values - Optional values to interpolate into the template.
+   * @returns The formatted string.
+   * @remarks
+   * This method allows you to create formatted SQL queries by interpolating values into a template string.
+   * It supports both object and array values.
+   *
+   * @example
+   * ```typescript
+   * const query = QueryBuilder.expr()
+   *   .select("name", "age")
+   *   .from("users")
+   *   .where(QueryBuilder.expr().format("age > ?", 30));
+   * ```
    */
   public format(tpl: string): string;
   /**
-   * 格式化模板字符串
-   * @param tpl 模板字符串
-   * @param values 键值对数据
+   * Formats a template string with key-value pairs.
+   * @param tpl - The template string to format.
+   * @param values - Key-value pairs to interpolate into the template.
+   * @returns The formatted string.
+   * @remarks
+   * This method allows you to create formatted SQL queries by interpolating key-value pairs into a template string.
+   *
+   * @example
+   * ```typescript
+   * const query = QueryBuilder.insert({ name: "John", age: 30 }).format("INSERT INTO users SET ?");
+   * ```
    */
   public format(tpl: string, values: DataRow): string;
   /**
-   * 格式化模板字符串
-   * @param tpl 模板字符串
-   * @param values 参数数组
+   * Formats a template string with an array of values.
+   * @param tpl - The template string to format.
+   * @param values - An array of values to interpolate into the template.
+   * @returns The formatted string.
+   * @remarks
+   * This method allows you to create formatted SQL queries by interpolating an array of values into a template string.
+   *
+   * @example
+   * ```typescript
+   * const query = QueryBuilder.select("name").from("users").where("age > ?").format("?");
+   * ```
    */
   public format(tpl: string, values: any[]): string;
 
+  /**
+   * @internal
+   * Implementation of the format method with optional parameters.
+   */
   public format(tpl: string, values?: DataRow | any[]): string {
     assert(typeof tpl === "string", `first parameter must be a string`);
     if (!values) {
@@ -176,29 +289,38 @@ export class QueryBuilder<Q = DataRow, R = any> {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * 设置表名
-   * @param tableName 表名
+   * Set the table name for the query.
+   *
+   * @param tableName - The name of the table to be used in the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if attempting to change the table name after it's already been set.
    */
   public into(tableName: string): this {
     return this.table(tableName);
   }
 
   /**
-   * 设置表名
-   * @param tableName 表名
+   * Set the table name for the query.
+   *
+   * @param tableName - The name of the table to be used in the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if attempting to change the table name after it's already been set.
    */
   public from(tableName: string): this {
     return this.table(tableName);
   }
 
   /**
-   * 设置表名
-   * @param tableName 表名
+   * Set the table name for the query.
+   *
+   * @param tableName - The name of the table to be used in the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if attempting to change the table name after it's already been set.
    */
   public table(tableName: string): this {
     assert(
       !this._data.tableName,
-      `cannot change table name after it's set to "${this._data.tableName}"`,
+      `Cannot change table name after it's set to "${this._data.tableName}"`,
     );
     this._data.tableName = tableName;
     this._data.tableNameEscaped = utils.sqlEscapeId(tableName);
@@ -208,26 +330,31 @@ export class QueryBuilder<Q = DataRow, R = any> {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * 设置表名对应的别名
-   * @param tableName 表名
-   * @param aliasName 别名
+   * Set an alias for a table name.
+   *
+   * @param tableName - The table name to be aliased.
+   * @param aliasName - The alias to be associated with the table name.
+   * @throws Throws an error if the alias name is already registered.
+   * @internal
    */
   protected setTableAlias(tableName: string, aliasName: string) {
-    // assert(!(tableName in this._data.mapTableToAlias), `table name "${tableName}" already registered`);
     assert(
       !(aliasName in this._data.mapAliasToTable),
-      `alias name "${aliasName}" already registered`,
+      `Alias name "${aliasName}" is already registered.`,
     );
     this._data.mapAliasToTable[aliasName] = tableName;
     this._data.mapTableToAlias[tableName] = aliasName;
   }
 
   /**
-   * 添加 JOIN 查询
-   * @param tableName
-   * @param type
-   * @param fields
-   * @param alias
+   * Add a JOIN query to the query builder.
+   *
+   * @param tableName - The name of the table to be joined.
+   * @param type - The type of JOIN (e.g., "JOIN," "LEFT JOIN," "RIGHT JOIN").
+   * @param fields - An array of fields to be selected from the joined table.
+   * @param alias - An optional alias for the joined table.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the first parameter is not a string.
    */
   protected addJoinTable(
     tableName: string,
@@ -235,7 +362,10 @@ export class QueryBuilder<Q = DataRow, R = any> {
     fields: string[],
     alias: string = "",
   ): this {
-    assert(typeof tableName === "string", `first parameter must be a string`);
+    assert(
+      typeof tableName === "string",
+      `The first parameter must be a string.`,
+    );
     this._data.currentJoinTableName = tableName;
     if (fields.length < 1) {
       fields = [];
@@ -247,11 +377,14 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 设置表别名，准备连表查询
-   * @param name 别名
+   * Set an alias for the current table.
+   *
+   * @param name - The alias name for the table.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the first parameter is not a string.
    */
   public as(name: string): this {
-    assert(typeof name === "string", `first parameter must be a string`);
+    assert(typeof name === "string", `The first parameter must be a string.`);
     const tableName = this._data.currentJoinTableName || this._data.tableName!;
     this.setTableAlias(tableName, name);
     if (this._data.joinTables.length > 0) {
@@ -261,40 +394,55 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * JOIN 连表
-   * @param tableName 表名
+   * Perform a JOIN operation on a table.
+   *
+   * @param tableName - The name of the table to join.
+   * @param fields - An optional array of fields to select from the joined table.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the first parameter is not a string.
    */
   public join(tableName: string, fields: string[] = []): this {
     return this.addJoinTable(tableName, "JOIN", fields);
   }
 
   /**
-   * LEFT JOIN 连表
-   * @param tableName 表名
+   * Perform a LEFT JOIN operation on a table.
+   *
+   * @param tableName - The name of the table to left join.
+   * @param fields - An optional array of fields to select from the left joined table.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the first parameter is not a string.
    */
   public leftJoin(tableName: string, fields: string[] = []): this {
     return this.addJoinTable(tableName, "LEFT JOIN", fields);
   }
 
   /**
-   * RIGHT JOIN 连表
-   * @param tableName 表名
+   * Perform a RIGHT JOIN operation on a table.
+   *
+   * @param tableName - The name of the table to right join.
+   * @param fields - An optional array of fields to select from the right joined table.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the first parameter is not a string.
    */
   public rightJoin(tableName: string, fields: string[] = []): this {
     return this.addJoinTable(tableName, "RIGHT JOIN", fields);
   }
 
   /**
-   * 连表条件
-   * @param condition 条件字符串
-   * @param values 模板参数
+   * Set the ON condition for the JOIN operation.
+   *
+   * @param condition - The ON condition as a string.
+   * @param values - An optional array of values to replace placeholders in the condition.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if a LEFT JOIN or RIGHT JOIN is missing.
    */
   public on(condition: string, values: DataRow | any[] = []): this {
     const last = this._data.joinTables[this._data.joinTables.length - 1];
-    assert(last, `missing leftJoin()`);
+    assert(last, `Missing leftJoin() or rightJoin().`);
     assert(
       !last.on,
-      `join condition already registered, before condition is "${last.on}"`,
+      `Join condition already registered. Previous condition is "${last.on}".`,
     );
     last.on = this.format(condition, values);
     return this;
@@ -303,18 +451,29 @@ export class QueryBuilder<Q = DataRow, R = any> {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * 查询条件
-   * @param condition 表达式
+   * Specify a WHERE condition for the query.
+   *
+   * @param condition - The condition to apply to the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid.
    */
   public where(condition: Expression): this;
+
   /**
-   * 查询条件
-   * @param condition SQL 语句
+   * Specify a WHERE condition for the query using SQL.
+   *
+   * @param condition - The SQL condition to apply to the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid.
    */
   public where(condition: string): this;
+
   /**
-   * 查询条件
-   * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
+   * Specify a WHERE condition for the query using key-value pairs.
+   *
+   * @param condition - An object containing key-value pairs representing the condition.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid or empty.
    */
   public where(
     condition:
@@ -322,12 +481,24 @@ export class QueryBuilder<Q = DataRow, R = any> {
       | Partial<Pick<AdvancedCondition, keyof Q>>
       | RawCondition,
   ): this;
+
   /**
-   * 查询条件
-   * @param condition 模板字符串，可以为 ('aaa=:a AND bbb=:b', { a: 123, b: 456 }) 或 ('aaa=? AND bbb=?', [ 123, 456 ])
+   * Specify a WHERE condition for the query using a template string.
+   *
+   * @param condition - The template string representing the condition.
+   * @param values - An optional array of values to replace placeholders in the condition.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid or empty.
    */
   public where(condition: string, values: DataRow | any[]): this;
 
+  /**
+   * Specify a WHERE condition for the query.
+   *
+   * @param condition - The condition to apply to the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid.
+   */
   public where(
     condition:
       | Expression
@@ -349,18 +520,29 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 查询条件
-   * @param condition 表达式
+   * Add an additional AND condition to the query.
+   *
+   * @param condition - The condition to apply to the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid.
    */
   public and(condition: Expression): this;
+
   /**
-   * 查询条件
-   * @param condition SQL 语句
+   * Add an additional AND condition to the query using SQL.
+   *
+   * @param condition - The SQL condition to apply to the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid.
    */
   public and(condition: string): this;
+
   /**
-   * 查询条件
-   * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
+   * Add an additional AND condition to the query using key-value pairs.
+   *
+   * @param condition - An object containing key-value pairs representing the condition.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid or empty.
    */
   public and(
     condition:
@@ -368,17 +550,34 @@ export class QueryBuilder<Q = DataRow, R = any> {
       | Partial<Pick<AdvancedCondition, keyof Q>>
       | RawCondition,
   ): this;
+
   /**
-   * 查询条件
-   * @param condition 模板字符串，可以为 ('aaa=:a AND bbb=:b', { a: 123, b: 456 })
+   * Add an additional AND condition to the query using a template string.
+   *
+   * @param condition - The template string representing the condition.
+   * @param values - An array of values to replace placeholders in the condition.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid or empty.
    */
   public and(condition: string, values: DataRow): this;
+
   /**
-   * 查询条件
-   * @param condition 模板字符串，可以为 ('aaa=? AND bbb=?', [ 123, 456 ])
+   * Add an additional AND condition to the query using a template string.
+   *
+   * @param condition - The template string representing the condition.
+   * @param values - An array of values to replace placeholders in the condition.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid or empty.
    */
   public and(condition: string, values: any[]): this;
 
+  /**
+   * Add an additional AND condition to the query.
+   *
+   * @param condition - The condition to apply to the query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the condition is invalid.
+   */
   public and(
     condition:
       | Expression
@@ -389,17 +588,17 @@ export class QueryBuilder<Q = DataRow, R = any> {
     values?: DataRow | any[],
   ): this {
     const t = typeof condition;
-    assert(condition, `missing condition`);
+    assert(condition, `Missing condition.`);
     assert(
       t === "string" || t === "object",
-      `condition must be a string or object`,
+      `Condition must be a string or object.`,
     );
     if (typeof condition === "string") {
       if (this._data.type !== "SELECT") {
-        // 如果是更改操作，检查 condition 不能为空
+        // Check if the condition is empty for modification operations.
         assert(
           condition.trim(),
-          `condition for modify operation cannot be empty`,
+          Messages.conditionCannotBeEmpty,
         );
       }
       this._data.conditions.push(this.format(condition, values || []));
@@ -409,13 +608,13 @@ export class QueryBuilder<Q = DataRow, R = any> {
       const keys = utils.findKeysForUndefinedValue(condition);
       assert(
         keys.length < 1,
-        `found undefined value for condition keys ${keys}; it may caused unexpected errors`,
+        Messages.undefinedValueConditionalKeys(keys),
       );
       if (this._data.type !== "SELECT") {
-        // 如果是更改操作，检查 condition 不能为空
+        // Check if the condition is empty for modification operations.
         assert(
           Object.keys(condition).length > 0,
-          `condition for modify operation cannot be empty`,
+          Messages.conditionCannotBeEmpty,
         );
       }
       if (typeof condition === "object" && "$raw" in condition) {
@@ -430,8 +629,16 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 查询的字段
-   * @param fields 要查询的字段
+   * Specifies a SELECT query with optional fields to retrieve.
+   *
+   * @param fields - Optional fields to retrieve in the SELECT query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.select("field1", "field2");
+   * ```
    */
   public select(...fields: string[]): this {
     assert(
@@ -444,8 +651,16 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 设置查询字段
-   * @param fields 要查询的字段
+   * Sets the fields to retrieve in the SELECT query.
+   *
+   * @param fields - Fields to retrieve in the SELECT query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if fields have already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.fields("field1", "field2");
+   * ```
    */
   public fields(...fields: string[]): this {
     assert(
@@ -459,8 +674,16 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 去除重复的字段查询
-   * @param fields
+   * Specifies a SELECT DISTINCT query with fields to retrieve.
+   *
+   * @param fields - Fields to retrieve in the SELECT DISTINCT query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set or if no fields are provided.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.selectDistinct("field1", "field2");
+   * ```
    */
   public selectDistinct(...fields: string[]): this {
     assert(
@@ -473,9 +696,17 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 查询数量
-   * @param name 存储结果的字段名（默认`count`）
-   * @param field 执行 count 的字段（默认`*`）
+   * Specifies a COUNT query to retrieve the count of records.
+   *
+   * @param name - The name to assign to the count result field (default: "count").
+   * @param field - The field to count (default: "*").
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.count("total");
+   * ```
    */
   public count(name = "count", field = "*"): this {
     assert(
@@ -488,32 +719,116 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 更新
+   * Specifies an UPDATE query.
+   *
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update();
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=:value", { value: 123 });
+   * ```
    */
   public update(): this;
   /**
-   * 更新
-   * @param update 键值对数据，如 { a: 123, b: 456 }
+   * Specifies an UPDATE query with data to set.
+   *
+   * @param update - Data to set in the UPDATE query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update({ field1: 123, field2: 456 });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=:value", { value: 123 });
+   * ```
    */
   public update(update: Partial<Q> | Pick<AdvancedUpdate, keyof Q>): this;
   /**
-   * 更新
-   * @param update SQL 语句，如 a=a+1
+   * Specifies an UPDATE query with SQL data to set.
+   *
+   * @param update - SQL data to set in the UPDATE query.
+   * @param values - Values to replace placeholders in the SQL data.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=field1+1");
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=:value", { value: 123 });
+   * ```
    */
   public update(update: string): this;
   /**
-   * 更新
-   * @param update SQL 语句模板，如 a=:a
-   * @param values 模板参数，如 { a: 123 }
+   * Specifies an UPDATE query with SQL data to set.
+   *
+   * @param update - SQL data to set in the UPDATE query.
+   * @param values - Values to replace placeholders in the SQL data.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=field1+1");
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=:value", { value: 123 });
+   * ```
    */
   public update(update: string, values: DataRow): this;
   /**
-   * 更新
-   * @param update SQL 语句模板，如 a=?
-   * @param values 模板参数，如 [ 123 ]
+   * Specifies an UPDATE query with SQL data to set.
+   *
+   * @param update - SQL data to set in the UPDATE query.
+   * @param values - Values to replace placeholders in the SQL data.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=field1+1");
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=:value", { value: 123 });
+   * ```
    */
   public update(update: string, values: any[]): this;
 
+  /**
+   * Specifies an UPDATE query with data to set.
+   *
+   * @param update - Data to set in the UPDATE query.
+   * @param values - Values to replace placeholders in the data.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update({ field1: 123, field2: 456 });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.update("field1=:value", { value: 123 });
+   * ```
+   */
   public update(
     update?: Partial<Q> | Pick<AdvancedUpdate, keyof Q> | string,
     values?: DataRow | any[],
@@ -537,28 +852,88 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 更新
-   * @param update SQL 语句，如 a=a+1
+   * Specifies data to be updated in an UPDATE query using a SQL update statement.
+   *
+   * @param update - The SQL update statement. For example, "a=a+1".
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to UPDATE or if the provided update data is invalid.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.set("a=a+1");
+   * ```
    */
   public set(update: string): this;
+
   /**
-   * 更新
-   * @param update SQL 语句模板，如 a=:a
-   * @param values 模板参数，如 { a: 123 }
+   * Specifies data to be updated in an UPDATE query using a SQL template with named placeholders.
+   *
+   * @param update - The SQL update template with named placeholders, such as "a=:a".
+   * @param values - An object containing parameter values that correspond to the named placeholders.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to UPDATE or if the provided update data is invalid.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.set("a=:value", { value: 123 });
+   * ```
    */
   public set(update: string, values: DataRow): this;
+
   /**
-   * 更新
-   * @param update SQL 语句模板，如 a=?
-   * @param values 模板参数，如 [ 123 ]
+   * Specifies data to be updated in an UPDATE query using a SQL template with positional placeholders.
+   *
+   * @param update - The SQL update template with positional placeholders, such as "a=?".
+   * @param values - An array of parameter values that correspond to the positional placeholders.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to UPDATE or if the provided update data is invalid.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.set("a=?", [123]);
+   * ```
    */
   public set(update: string, values: any[]): this;
-  /**
-   * 更新
-   * @param update 键值对数据，如 { a: 123, b: 456 }
-   */
-  public set(update: Partial<Q> | Partial<Pick<AdvancedUpdate, keyof Q>>): this;
 
+  /**
+   * Specifies data to be updated in an UPDATE query using a set of key-value pairs.
+   *
+   * @param update - An object containing key-value pairs to set in the UPDATE query. For example, { a: 123, b: 456 }.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to UPDATE or if the provided update data is invalid.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.set({ a: 123, b: 456 });
+   * ```
+   */
+  public set(
+    update: Partial<Q> | Partial<Pick<AdvancedUpdate, keyof Q>>,
+  ): this;
+
+  /**
+   * Specifies data to be updated in an UPDATE query using a SQL statement or key-value pairs.
+   *
+   * @param update - The update data, which can be a SQL update statement, a SQL template, or key-value pairs.
+   * @param values - Optional. If `update` is a SQL template, this parameter provides the parameter values.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to UPDATE or if the provided update data is invalid.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.set("a=a+1");
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.set("a=:value", { value: 123 });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.set({ a: 123, b: 456 });
+   * ```
+   */
   public set(
     update: string | Partial<Q> | Partial<Pick<AdvancedUpdate, keyof Q>>,
     values?: DataRow | any[],
@@ -587,16 +962,56 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 插入
-   * @param data 键值对数据
+   * Specifies data to be inserted into the database table.
+   *
+   * @param data - Key-value pairs of data to insert.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to INSERT or if the data parameter is missing or not of type object.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.insert({ name: 'John', age: 30 });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.insert([
+   *   { name: 'John', age: 30 },
+   *   { name: 'Alice', age: 25 }
+   * ]);
+   * ```
    */
   public insert(data: Partial<Q>): this;
+
   /**
-   * 插入
-   * @param data 键值对数据数组
+   * Specifies an array of data to be inserted into the database table.
+   *
+   * @param data - Array of key-value pairs of data to insert.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to INSERT, if the data parameter is missing, or if it's not an array of objects.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.insert([
+   *   { name: 'John', age: 30 },
+   *   { name: 'Alice', age: 25 }
+   * ]);
+   * ```
    */
   public insert(data: Array<Partial<Q>>): this;
 
+  /**
+   * Specifies data to be inserted into the database table.
+   *
+   * @param data - Key-value pairs of data to insert or an array of key-value pairs.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to INSERT, if the data parameter is missing, or if it's not an object or an array of objects.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.insert({ name: 'John', age: 30 });
+   * ```
+   */
   public insert(data: Partial<Q> | Array<Partial<Q>>): this {
     assert(
       this._data.type === "",
@@ -606,7 +1021,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
     assert(data, `missing data`);
     assert(typeof data === "object", `data must be an object or array`);
     if (Array.isArray(data)) {
-      assert(data.length >= 1, `data array must at least have 1 item`);
+      assert(data.length >= 1, `data array must have at least 1 item`);
     } else {
       data = [data];
     }
@@ -636,7 +1051,15 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 删除
+   * Specifies that a DELETE query should be executed to delete data from the database table.
+   *
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to DELETE.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.delete();
+   * ```
    */
   public delete(): this {
     assert(
@@ -648,9 +1071,17 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 插入记录时如果键冲突，则改为更新
+   * Specifies that when inserting records, if there is a key conflict, it should be updated.
    * ON DUPLICATE KEY UPDATE
-   * 用法：table("xx").insert(row).onDuplicateKeyUpdate().set(update)
+   * Usage: table("xx").insert(row).onDuplicateKeyUpdate().set(update)
+   *
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if onDuplicateKeyUpdate() is called before insert() or if insert() hasn't inserted a single row.
+   *
+   * @example
+   * ```typescript
+   * table("my_table").insert({ id: 1, name: 'John' }).onDuplicateKeyUpdate().set({ name: 'Alice' });
+   * ```
    */
   public onDuplicateKeyUpdate(): this {
     assert(
@@ -659,30 +1090,77 @@ export class QueryBuilder<Q = DataRow, R = any> {
     );
     assert(
       this._data.insertRows === 1,
-      `onDuplicateKeyUpdate() must inserted one row, but accutal is ${this._data.insertRows} rows`,
+      Messages.functionWithWrongRowCount(
+        "onDuplicateKeyUpdate",
+        this._data.insertRows,
+      ),
     );
     this._data.type = "INSERT_OR_UPDATE";
     return this;
   }
 
   /**
-   * 自定义SQL语句
-   * @param sql SQL 查询语句
+   * Specifies a custom SQL query.
+   *
+   * @param sql - SQL query statement.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to an empty string.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.sql('SELECT * FROM my_table');
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.sql('SELECT * FROM my_table WHERE id = :id', { id: 1 });
+   * ```
    */
   public sql(sql: string): this;
+
   /**
-   * 自定义SQL语句
-   * @param sql SQL 查询语句
-   * @param values 模板参数，如 { a: 123 }
+   * Specifies a custom SQL query with template parameters.
+   *
+   * @param sql - SQL query statement with placeholders.
+   * @param values - Template parameter values.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to an empty string.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.sql('SELECT * FROM my_table WHERE id = :id', { id: 1 });
+   * ```
    */
   public sql(sql: string, values: DataRow): this;
+
   /**
-   * 自定义SQL语句
-   * @param sql SQL 查询语句
-   * @param values 模板参数，如 [ 123 ]
+   * Specifies a custom SQL query with template parameters.
+   *
+   * @param sql - SQL query statement with placeholders.
+   * @param values - Template parameter values.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type is not set to an empty string.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.sql('SELECT * FROM my_table WHERE id = ?', [1]);
+   * ```
    */
   public sql(sql: string, values: any[]): this;
 
+  /**
+   * Sets a custom SQL query statement for the query builder.
+   *
+   * @param sql - The custom SQL query statement.
+   * @param values - (Optional) Template parameter values for the SQL query.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if the query type has already been set.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.sql('SELECT * FROM users WHERE age > :minAge', { minAge: 18 });
+   * ```
+   */
   public sql(sql: string, values?: DataRow | any[]): this {
     assert(
       this._data.type === "",
@@ -695,23 +1173,58 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 排序方法
-   * @param tpl SQL 查询语句
+   * Specifies a sorting method for the query result.
+   *
+   * @param tpl - SQL query statement for ordering.
+   * @returns This QueryBuilder instance for method chaining.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.orderBy('name DESC');
+   * ```
    */
   public orderBy(tpl: string): this;
+
   /**
-   * 排序方法
-   * @param tpl SQL 查询语句
-   * @param values 模板参数，如 { a: 123 }
+   * Specifies a sorting method for the query result with template parameters.
+   *
+   * @param tpl - SQL query statement for ordering with placeholders.
+   * @param values - Template parameter values.
+   * @returns This QueryBuilder instance for method chaining.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.orderBy('name ASC, age DESC');
+   * ```
    */
   public orderBy(tpl: string, values: DataRow): this;
+
   /**
-   * 排序方法
-   * @param tpl SQL 查询语句
-   * @param values 模板参数，如 [ 123 ]
+   * Specifies a sorting method for the query result with template parameters.
+   *
+   * @param tpl - SQL query statement for ordering with placeholders.
+   * @param values - Template parameter values.
+   * @returns This QueryBuilder instance for method chaining.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.orderBy('name ASC', { name: 'Alice' });
+   * ```
    */
   public orderBy(tpl: string, values: any[]): this;
 
+  /**
+   * Sets the sorting criteria for the query results.
+   *
+   * @param tpl - The SQL sorting template, e.g., "column_name DESC".
+   * @param values - (Optional) Template parameter values for the sorting criteria.
+   * @returns This QueryBuilder instance for method chaining.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.orderBy('column_name DESC');
+   * ```
+   */
   public orderBy(tpl: string, values?: DataRow | any[]): this {
     if (values) {
       this._data.orderFields = this.format(tpl, values);
@@ -727,8 +1240,21 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 分组方法
-   * @param fields 字段
+   * Specifies grouping fields for the query result.
+   *
+   * @param fields - Fields to group by.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if no fields are provided for grouping.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.groupBy('category');
+   * ```
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.groupBy('category', 'sub_category');
+   * ```
    */
   public groupBy(...fields: string[]): this {
     assert(fields.length > 0, `groupBy expected one or more fields`);
@@ -739,23 +1265,63 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 分组条件
-   * @param tpl SQL 查询语句
+   * Specifies a grouping condition for the query result.
+   *
+   * @param tpl - SQL query statement for grouping.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if groupBy() hasn't been called before using having().
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.groupBy('category').having('SUM(quantity) > 10');
+   * ```
    */
   public having(tpl: string): this;
+
   /**
-   * 分组条件
-   * @param tpl SQL 查询语句
-   * @param values 模板参数，如 { a: 123 }
+   * Specifies a grouping condition for the query result with template parameters.
+   *
+   * @param tpl - SQL query statement for grouping with placeholders.
+   * @param values - Template parameter values.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if groupBy() hasn't been called before using having().
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.groupBy('category', 'sub_category').having('SUM(quantity) > :minQuantity', { minQuantity: 10 });
+   * ```
    */
   public having(tpl: string, values: DataRow): this;
+
   /**
-   * 分组条件
-   * @param tpl SQL 查询语句
-   * @param values 模板参数，如 [ 123 ]
+   * Specifies a grouping condition for the query result with template parameters.
+   *
+   * @param tpl - SQL query statement for grouping with placeholders.
+   * @param values - Template parameter values.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if groupBy() hasn't been called before using having().
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.groupBy('category', 'sub_category').having('SUM(quantity) > ?', [10]);
+   * ```
    */
   public having(tpl: string, values: any[]): this;
 
+  /**
+   * Specifies a condition for grouping in the query.
+   *
+   * @param tpl - The SQL condition template, e.g., "column_name > 10".
+   * @param values - (Optional) Template parameter values for the condition.
+   * @returns This QueryBuilder instance for method chaining.
+   *
+   * @throws Error if `groupBy` has not been called before `having`.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.groupBy('column_name').having('COUNT(column_name) > 5');
+   * ```
+   */
   public having(tpl: string, values?: DataRow | any[]): this {
     assert(this._data.groupBy.length > 0, `please call groupBy() firstly`);
     if (values) {
@@ -767,11 +1333,19 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 跳过指定行数
-   * @param rows 行数
+   * Specifies the number of rows to skip in the query result.
+   *
+   * @param rows - The number of rows to skip.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if rows is less than 0.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.offset(10);
+   * ```
    */
   public offset(rows: number): this {
-    assert(rows >= 0, `rows must >= 0`);
+    assert(rows >= 0, `rows must be >= 0`);
     this._data.offsetRows = Number(rows);
     this._data.limit = utils.sqlLimitString(
       this._data.offsetRows,
@@ -781,19 +1355,35 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 跳过指定行数
-   * @param rows 行数
+   * Specifies the number of rows to skip in the query result (alias for offset()).
+   *
+   * @param rows - The number of rows to skip.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if rows is less than 0.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.skip(10);
+   * ```
    */
   public skip(rows: number): this {
     return this.offset(rows);
   }
 
   /**
-   * 返回指定行数
-   * @param rows 行数
+   * Specifies the maximum number of rows to return in the query result.
+   *
+   * @param rows - The maximum number of rows to return.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if rows is less than 0.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.limit(50);
+   * ```
    */
   public limit(rows: number): this {
-    assert(rows >= 0, `rows must >= 0`);
+    assert(rows >= 0, `rows must be >= 0`);
     this._data.limitRows = Number(rows);
     this._data.limit = utils.sqlLimitString(
       this._data.offsetRows,
@@ -803,8 +1393,16 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 批量设置 options
-   * @param options 选项，包含 { offset, limit, orderBy, groupBy, fields }
+   * Sets multiple query options at once.
+   *
+   * @param options - Options object containing { offset, limit, orderBy, groupBy, fields }.
+   * @returns This QueryBuilder instance for method chaining.
+   * @throws Throws an error if options is not an object.
+   *
+   * @example
+   * ```typescript
+   * queryBuilder.options({ offset: 10, limit: 50, orderBy: 'name ASC', groupBy: 'category', fields: ['name', 'age'] });
+   * ```
    */
   public options(options: QueryOptionsParams): this {
     assert(options, `options must be an Object`);
@@ -830,7 +1428,15 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
-   * 生成 SQL 语句
+   * Generates the SQL query string based on the current query builder configuration.
+   *
+   * @returns The SQL query string.
+   * @throws Throws an error if any required query builder configurations are missing.
+   *
+   * @example
+   * ```typescript
+   * const sqlQuery = queryBuilder.build();
+   * ```
    */
   public build(): string {
     const data = this._data;

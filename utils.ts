@@ -1,17 +1,36 @@
 import { assertStrictEquals } from "assert";
 import SqlString from "./sqlString.ts";
+import Messages from "./messages.ts";
+
 /**
- * 判断是否为 QueryBuilder 实例
- * @param query
+ * Checks if an object is an instance of QueryBuilder.
+ *
+ * @param query - The object to be checked.
+ * @returns `true` if the object is an instance of QueryBuilder, otherwise `false`.
+ *
+ * @example
+ * ```typescript
+ * const query = createQueryBuilder();
+ * const result = isQueryBuilder(query); // true
+ * ```
  */
 export function isQueryBuilder(query: any): boolean {
   return query && typeof query.build === "function";
 }
 
 /**
- * 格式化SQL字符串
- * @param tpl 模板字符串
- * @param values 模板变量
+ * Formats an SQL string with values replaced by placeholders.
+ *
+ * @param tpl - The SQL string with placeholders, e.g., "SELECT * FROM ?? WHERE id = ?".
+ * @param values - The values to be inserted into the placeholders.
+ * @returns The formatted SQL string with the values inserted.
+ *
+ * @example
+ * ```typescript
+ * const sql = "SELECT * FROM ?? WHERE id = ?";
+ * const formattedSql = sqlFormat(sql, ["table", 123]);
+ * console.log(formattedSql); // Outputs: "SELECT * FROM `table` WHERE id = 123"
+ * ```
  */
 export function sqlFormat(tpl: string, values: any[] = []): string {
   values = values.slice();
@@ -31,7 +50,7 @@ export function sqlFormat(tpl: string, values: any[] = []): string {
       assertStrictEquals(
         typeof sql,
         "string",
-        `sqlFormat: values[${index}].build() must returns a string`,
+        `sqlFormat: values[${index}].build() must return a string`,
       );
       values.splice(index, 1);
       index--;
@@ -45,11 +64,20 @@ export function sqlFormat(tpl: string, values: any[] = []): string {
 }
 
 /**
- * 返回格式化后的 SQL 语句
- * 格式： SELECT * FROM ::table WHERE `title`=:title AND `id` IN :::ids
- * @param sql SQL 模板语句
- * @param values 参数对象
- * @param disable$ 是否没有 $ 开头的 key
+ * Formats an SQL string with values from an object replaced by placeholders.
+ *
+ * @param sql - The SQL string with placeholders, e.g., "SELECT * FROM ::table WHERE `title`=:title".
+ * @param values - The object containing the values to be inserted into the placeholders.
+ * @param disable$ - Defines whether placeholders without "$" prefix should be disabled.
+ * @returns The formatted SQL string with the object values inserted into the placeholders.
+ *
+ * @example
+ * ```typescript
+ * const sql = "SELECT * FROM ::table WHERE `title`=:title AND `id` IN :::ids";
+ * const values = { table: "my_table", title: "example", ids: [1, 2, 3] };
+ * const formattedSql = sqlFormatObject(sql, values);
+ * console.log(formattedSql); // Outputs: "SELECT * FROM `my_table` WHERE `title`='example' AND `id` IN (1, 2, 3)"
+ * ```
  */
 export function sqlFormatObject(
   sql: string,
@@ -80,7 +108,7 @@ export function sqlFormatObject(
             assertStrictEquals(
               typeof sql,
               "string",
-              `sqlFormatObject: values["${name}"].build() must returns a string`,
+              `sqlFormatObject: values["${name}"].build() must return a string`,
             );
             return `(${sql})`;
           }
@@ -98,32 +126,68 @@ export function sqlFormatObject(
 }
 
 /**
- * 转义SQL值
- * @param value 值
+ * Escapes a value for safe use in an SQL string.
+ *
+ * @param value - The value to be escaped.
+ * @returns The escaped value as an SQL string.
+ *
+ * @example
+ * ```typescript
+ * const input = "John's data";
+ * const escapedValue = sqlEscape(input);
+ * console.log(escapedValue); // Outputs: "'John\\'s data'"
+ * ```
  */
 export function sqlEscape(value: string): string {
   return SqlString.escape(value);
 }
 
 /**
- * 转义SQL标识符
- * @param value 标识符
+ * Escapes an SQL identifier (e.g., a column or table name) for safe use in an SQL string.
+ *
+ * @param value - The identifier to be escaped.
+ * @returns The escaped identifier as an SQL string.
+ *
+ * @example
+ * ```typescript
+ * const identifier = "column_name";
+ * const escapedIdentifier = sqlEscapeId(identifier);
+ * console.log(escapedIdentifier); // Outputs: "`column_name`"
+ * ```
  */
 export function sqlEscapeId(value: string): string {
   return SqlString.escapeId(value);
 }
 
 /**
- * 查找值为undefined的key列表
- * @param data
+ * Finds keys in an object with undefined values.
+ *
+ * @param data - The object to be checked.
+ * @returns An array of keys with undefined values.
+ *
+ * @example
+ * ```typescript
+ * const data = { name: "John", age: undefined, city: undefined };
+ * const undefinedKeys = findKeysForUndefinedValue(data);
+ * console.log(undefinedKeys); // Outputs: ["age", "city"]
+ * ```
  */
 export function findKeysForUndefinedValue(data: Record<string, any>): string[] {
   return Object.keys(data).filter((k) => typeof data[k] === "undefined");
 }
 
 /**
- * 返回根据对象生成的 SQL UPDATE 语句
- * @param data 键值对对象
+ * Returns an SQL UPDATE string generated based on an object.
+ *
+ * @param data - The object containing the values to be updated.
+ * @returns The generated SQL UPDATE string.
+ *
+ * @example
+ * ```typescript
+ * const data = { name: "John", age: 30 };
+ * const updateSql = sqlUpdateString(data);
+ * console.log(updateSql); // Outputs: "`name`='John', `age`=30"
+ * ```
  */
 export function sqlUpdateString(data: Record<string, any>): string {
   return Object.keys(data)
@@ -150,9 +214,17 @@ export function sqlUpdateString(data: Record<string, any>): string {
 }
 
 /**
- * 返回根据对象生成的 SQL WHERE 语句
- * @param self QueryBuilder实例
- * @param condition 查询条件
+ * Returns an array of SQL condition strings generated based on a condition object.
+ *
+ * @param condition - The condition object containing query rules.
+ * @returns An array of SQL condition strings.
+ *
+ * @example
+ * ```typescript
+ * const condition = { name: { $eq: "John" }, age: { $gt: 25 } };
+ * const conditionSql = sqlConditionStrings(condition);
+ * console.log(conditionSql); // Outputs: ["`name`='John'", "`age`>25"]
+ * ```
  */
 export function sqlConditionStrings(condition: Record<string, any>): string[] {
   const ret: string[] = [];
@@ -213,7 +285,11 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
               assertStrictEquals(
                 typeof sql,
                 "string",
-                `sqlConditionStrings: values["${name}"].$in.build() must returns a string`,
+                Messages.methodMustReturnString(
+                  "sqlConditionStrings",
+                  name,
+                  "in",
+                ),
               );
               ret.push(`${escapedName} IN (${sql})`);
             } else if (Array.isArray(info.$in)) {
@@ -239,7 +315,11 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
               assertStrictEquals(
                 typeof sql,
                 "string",
-                `sqlConditionStrings: values["${name}"].$notIn.build() must returns a string`,
+                Messages.methodMustReturnString(
+                  "sqlConditionStrings",
+                  name,
+                  "notIn",
+                ),
               );
               ret.push(`${escapedName} NOT IN (${sql})`);
             } else if (Array.isArray(info.$notIn)) {
@@ -290,9 +370,19 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
 }
 
 /**
- * 返回生成 SQL LIMIT 语句
- * @param offset 跳过的行数
- * @param limit 返回的行数
+ * Returns an SQL LIMIT string generated based on offset and limit values.
+ *
+ * @param offset - The number of rows to skip.
+ * @param limit - The maximum number of rows to return.
+ * @returns The generated SQL LIMIT string.
+ *
+ * @example
+ * ```typescript
+ * const offset = 10;
+ * const limit = 5;
+ * const limitSql = sqlLimitString(offset, limit);
+ * console.log(limitSql); // Outputs: "LIMIT 10,5"
+ * ```
  */
 export function sqlLimitString(offset: number, limit: number): string {
   offset = Number(offset);
@@ -307,8 +397,18 @@ export function sqlLimitString(offset: number, limit: number): string {
 }
 
 /**
- * 合并多段文本
- * @param strs 文本数组
+ * Concatenates multiple strings, removing unnecessary whitespace.
+ *
+ * @param strs - The strings to be concatenated.
+ * @returns A single concatenated string without unnecessary whitespace.
+ *
+ * @example
+ * ```typescript
+ * const str1 = "SELECT *";
+ * const str2 = "FROM table";
+ * const concatenatedStr = joinMultiString(str1, str2);
+ * console.log(concatenatedStr); // Outputs: "SELECT * FROM table"
+ * ```
  */
 export function joinMultiString(...strs: string[]): string {
   return strs
@@ -318,17 +418,36 @@ export function joinMultiString(...strs: string[]): string {
 }
 
 /**
- * 对象深拷贝
- * @param data
+ * Performs a deep copy of an object.
+ *
+ * @param data - The object to be copied.
+ * @returns A deep copy of the object.
+ *
+ * @example
+ * ```typescript
+ * const original = { name: "John", age: 30 };
+ * const copy = deepCopy(original);
+ * console.log(copy); // Outputs: { name: "John", age: 30 }
+ * ```
  */
 export function deepCopy<T = any>(data: T): T {
   return JSON.parse(JSON.stringify(data));
 }
 
 /**
- * 格式化字段列表
- * @param table
- * @param fields
+ * Formats a list of fields with or without a table name.
+ *
+ * @param table - The table name (optional).
+ * @param fields - The list of fields.
+ * @returns A formatted list of fields with or without the table name.
+ *
+ * @example
+ * ```typescript
+ * const table = "users";
+ * const fields = ["id", "name"];
+ * const formattedFields = formatFields(table, fields);
+ * console.log(formattedFields); // Outputs: ["users.id", "users.name"]
+ * ```
  */
 export function formatFields(table: string, fields: string[]) {
   const prefix = table ? `${table}.` : "";
