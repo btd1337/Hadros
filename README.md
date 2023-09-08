@@ -1,14 +1,13 @@
-![CI](https://github.com/yourtion/deno-sql/workflows/Deno-SQL-CI/badge.svg?branch=master)
+![CI](https://github.com/btd1337/hadros/workflows/Deno-SQL-CI/badge.svg?branch=master)
 
-# deno-sql
+# Hadros
 
-SQL Builder on Deno base on  @leizm/sql
+Hadros is a Postgres SQL Builder for Deno based on @yourtion/deno-sql
 
 ## Usage
 
 ```typescript
-import { table, expr, query } from "https://deno.land/x/mysql/mod.ts";
-import { table } from "https://deno.land/x/sql/mod.ts";
+import { expr, query, table } from "https://deno.land/x/hadros/mod.ts";
 
 // simple query
 table("test")
@@ -138,7 +137,7 @@ const client = await new Client().connect({});
 const data = await query(
   client,
   table("test").select("*").limit(1),
-)
+);
 console.log(data);
 ```
 
