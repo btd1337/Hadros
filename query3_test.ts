@@ -1,10 +1,7 @@
+import { assertStrictEquals } from "assert";
 import Q from "./mod.ts";
-import {
-  test,
-  assertStrictEq,
-} from "./test_deps.ts";
 
-test("query sub query1", () => {
+Deno.test("query sub query1", () => {
   const sql = Q.select("*")
     .from("test1")
     .where("a=? AND b IN ???", [
@@ -16,12 +13,12 @@ test("query sub query1", () => {
     ])
     .build();
   //   utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT * FROM `test1` WHERE a=123 AND b IN (SELECT `id` FROM `test2` WHERE `id`<10 LIMIT 100)",
   );
 });
-test("query sub query2", () => {
+Deno.test("query sub query2", () => {
   const sql = Q.select("*")
     .from("test1")
     .where("a=:a AND b IN :::b", {
@@ -33,12 +30,12 @@ test("query sub query2", () => {
     })
     .build();
   //   utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT * FROM `test1` WHERE a=123 AND b IN (SELECT `id` FROM `test2` WHERE `id`<10 LIMIT 100)",
   );
 });
-test("query sub query3", () => {
+Deno.test("query sub query3", () => {
   const sql = Q.select("*")
     .from("test1")
     .where({
@@ -52,13 +49,13 @@ test("query sub query3", () => {
     })
     .build();
   //   utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT * FROM `test1` WHERE `a`=123 AND `b` IN (SELECT `id` FROM `test2` WHERE `id`<10 LIMIT 100)",
   );
 });
 
-test("query select - $raw", () => {
+Deno.test("query select - $raw", () => {
   const sql = Q.select("*")
     .from("test1")
     .where({
@@ -67,9 +64,9 @@ test("query select - $raw", () => {
     })
     .build();
   //   utils.debug(sql);
-  assertStrictEq(sql, "SELECT * FROM `test1` WHERE a > b AND `a`=123");
+  assertStrictEquals(sql, "SELECT * FROM `test1` WHERE a > b AND `a`=123");
 });
-test("query select - $raw", () => {
+Deno.test("query select - $raw", () => {
   const sql = Q.select("*")
     .from("test1")
     .where({
@@ -78,27 +75,27 @@ test("query select - $raw", () => {
     })
     .build();
   //   utils.debug(sql);
-  assertStrictEq(sql, "SELECT * FROM `test1` WHERE a > b AND `a`=123");
+  assertStrictEquals(sql, "SELECT * FROM `test1` WHERE a > b AND `a`=123");
 });
 
-test("query clone", () => {
+Deno.test("query clone", () => {
   const q = Q.select("*").from("test1").where({ a: 123 });
 
   const sql1 = q.clone().where({ b: 456 }).offset(10).limit(20).build();
   //   utils.debug(sql1);
-  assertStrictEq(
+  assertStrictEquals(
     sql1,
     "SELECT * FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10,20",
   );
   const sql2 = q.clone().where({ b: 789, c: 666 }).orderBy("a DESC").build();
   //   utils.debug(sql2);
-  assertStrictEq(
+  assertStrictEquals(
     sql2,
     "SELECT * FROM `test1` WHERE `a`=123 AND `b`=789 AND `c`=666 ORDER BY a DESC",
   );
 });
 
-test("query typings - select", () => {
+Deno.test("query typings - select", () => {
   const a = 1;
   const b = "b";
   const sql = Q.select<{
@@ -111,9 +108,12 @@ test("query typings - select", () => {
     .where({ [b]: { $eq: a } })
     .build();
   // utils.debug(sql);
-  assertStrictEq(sql, "SELECT * FROM `test1` WHERE `a`=2 AND `b`<3 AND `b`=1");
+  assertStrictEquals(
+    sql,
+    "SELECT * FROM `test1` WHERE `a`=2 AND `b`<3 AND `b`=1",
+  );
 });
-test("query typings - update", () => {
+Deno.test("query typings - update", () => {
   const a = 1;
   const b = "b";
   const sql = Q.update<{
@@ -126,5 +126,8 @@ test("query typings - update", () => {
     .set({ [b]: { $incr: a } })
     .build();
   // utils.debug(sql);
-  assertStrictEq(sql, "UPDATE `test1` SET `b`=`b`+(1) WHERE `a`=2 AND `b`<3");
+  assertStrictEquals(
+    sql,
+    "UPDATE `test1` SET `b`=`b`+(1) WHERE `a`=2 AND `b`<3",
+  );
 });

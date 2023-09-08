@@ -1,6 +1,6 @@
-import { assert } from "./deps.ts";
 import * as utils from "./utils.ts";
-import { DataRow, AdvancedCondition } from "./common.ts";
+import { AdvancedCondition, DataRow } from "./common.ts";
+import { assert } from "assert";
 
 export class Expression {
   protected _type: string = "";

@@ -1,5 +1,5 @@
+import { assertStrictEquals } from "assert";
 import SqlString from "./sqlString.ts";
-import { assertStrictEq } from "./deps.ts";
 /**
  * 判断是否为 QueryBuilder 实例
  * @param query
@@ -28,7 +28,7 @@ export function sqlFormat(tpl: string, values: any[] = []): string {
     }
     if (isQueryBuilder(v)) {
       const sql = v.build();
-      assertStrictEq(
+      assertStrictEquals(
         typeof sql,
         "string",
         `sqlFormat: values[${index}].build() must returns a string`,
@@ -77,7 +77,7 @@ export function sqlFormatObject(
           if (typeof values[name] === "string") return values[name];
           if (isQueryBuilder(values[name])) {
             const sql = values[name].build();
-            assertStrictEq(
+            assertStrictEquals(
               typeof sql,
               "string",
               `sqlFormatObject: values["${name}"].build() must returns a string`,
@@ -174,7 +174,7 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
       Object.keys(info).forEach((op) => {
         switch (op) {
           case "$isNull":
-            assertStrictEq(
+            assertStrictEquals(
               true,
               info.$isNull,
               `value of $isNull property must be true`,
@@ -182,7 +182,7 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
             ret.push(`${escapedName} IS NULL`);
             break;
           case "$isNotNull":
-            assertStrictEq(
+            assertStrictEquals(
               true,
               info.$isNotNull,
               `value of $isNotNull property must be true`,
@@ -210,7 +210,7 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
           case "$in":
             if (isQueryBuilder(info.$in)) {
               const sql = info.$in.build();
-              assertStrictEq(
+              assertStrictEquals(
                 typeof sql,
                 "string",
                 `sqlConditionStrings: values["${name}"].$in.build() must returns a string`,
@@ -236,7 +236,7 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
           case "$notIn":
             if (isQueryBuilder(info.$notIn)) {
               const sql = info.$notIn.build();
-              assertStrictEq(
+              assertStrictEquals(
                 typeof sql,
                 "string",
                 `sqlConditionStrings: values["${name}"].$notIn.build() must returns a string`,
@@ -260,7 +260,7 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
             }
             break;
           case "$like":
-            assertStrictEq(
+            assertStrictEquals(
               typeof info.$like,
               "string",
               `value for condition type $like in ${name} must be a string`,
@@ -268,7 +268,7 @@ export function sqlConditionStrings(condition: Record<string, any>): string[] {
             ret.push(`${escapedName} LIKE ${sqlEscape(info.$like)}`);
             break;
           case "$notLike":
-            assertStrictEq(
+            assertStrictEquals(
               typeof info.$notLike,
               "string",
               `value for condition type $notLike in ${name} must be a string`,

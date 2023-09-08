@@ -1,15 +1,10 @@
+import { assertEquals, AssertionError, assertThrows } from "assert";
 import {
   sqlConditionStrings,
   sqlFormat,
   sqlFormatObject,
   sqlUpdateString,
 } from "./utils.ts";
-import {
-  test,
-  assertEquals,
-  assertThrows,
-  AssertionError,
-} from "./test_deps.ts";
 
 class TestQuery {
   build() {
@@ -22,73 +17,73 @@ class TestQuery2 {
   }
 }
 
-test("utils sqlConditionString - $lt and $lte", () => {
+Deno.test("utils sqlConditionString - $lt and $lte", () => {
   assertEquals(sqlConditionStrings({ a: { $lt: 123, $lte: 456 } }), [
     "`a`<123",
     "`a`<=456",
   ]);
 });
 
-test("utils sqlConditionString - $gt and $gte", () => {
+Deno.test("utils sqlConditionString - $gt and $gte", () => {
   assertEquals(sqlConditionStrings({ a: { $gt: 123, $gte: 456 } }), [
     "`a`>123",
     "`a`>=456",
   ]);
 });
 
-test("utils sqlConditionString - $eq", () => {
+Deno.test("utils sqlConditionString - $eq", () => {
   assertEquals(sqlConditionStrings({ a: { $eq: "aaa" } }), ["`a`='aaa'"]);
 });
 
-test("utils sqlConditionString - $like", () => {
+Deno.test("utils sqlConditionString - $like", () => {
   assertEquals(sqlConditionStrings({ a: { $like: "xx%" } }), [
     "`a` LIKE 'xx%'",
   ]);
 });
 
-test("utils sqlConditionString - $notLike", () => {
+Deno.test("utils sqlConditionString - $notLike", () => {
   assertEquals(sqlConditionStrings({ a: { $notLike: "xx%" } }), [
     "`a` NOT LIKE 'xx%'",
   ]);
 });
 
-test("utils sqlConditionString - $in [1, 2, 3]", () => {
+Deno.test("utils sqlConditionString - $in [1, 2, 3]", () => {
   assertEquals(sqlConditionStrings({ a: { $in: [1, 2, 3] } }), [
     "`a` IN (1, 2, 3)",
   ]);
 });
 
-test("utils sqlConditionString - $in object", () => {
+Deno.test("utils sqlConditionString - $in object", () => {
   assertEquals(sqlConditionStrings({ a: { $in: new TestQuery() } }), [
     "`a` IN (xxx)",
   ]);
 });
 
-test("utils sqlConditionString - $in []", () => {
+Deno.test("utils sqlConditionString - $in []", () => {
   assertEquals(sqlConditionStrings({ a: { $in: [] } }), [
     "0 /* empty list warn: `a` IN () */",
   ]);
 });
 
-test("utils sqlConditionString - $notIn [1, 2, 3", () => {
+Deno.test("utils sqlConditionString - $notIn [1, 2, 3", () => {
   assertEquals(sqlConditionStrings({ a: { $notIn: [1, 2, 3] } }), [
     "`a` NOT IN (1, 2, 3)",
   ]);
 });
 
-test("utils sqlConditionString - $notIn object", () => {
+Deno.test("utils sqlConditionString - $notIn object", () => {
   assertEquals(sqlConditionStrings({ a: { $notIn: new TestQuery() } }), [
     "`a` NOT IN (xxx)",
   ]);
 });
 
-test("utils sqlConditionString - $notIn []", () => {
+Deno.test("utils sqlConditionString - $notIn []", () => {
   assertEquals(sqlConditionStrings({ a: { $notIn: [] } }), [
     "1 /* empty list warn: `a` NOT IN () */",
   ]);
 });
 
-test("utils sqlConditionString - $xxx error", () => {
+Deno.test("utils sqlConditionString - $xxx error", () => {
   assertThrows(
     () => sqlConditionStrings({ a: { $xxx: 1 } }),
     Error,
@@ -96,7 +91,7 @@ test("utils sqlConditionString - $xxx error", () => {
   );
 });
 
-test("utils sqlConditionString - build() function", () => {
+Deno.test("utils sqlConditionString - build() function", () => {
   assertThrows(
     () => sqlConditionStrings({ a: { $in: new TestQuery2() } }),
     AssertionError,
@@ -104,7 +99,7 @@ test("utils sqlConditionString - build() function", () => {
   );
 });
 
-test("utils sqlConditionString - $in array", () => {
+Deno.test("utils sqlConditionString - $in array", () => {
   assertThrows(
     () => sqlConditionStrings({ a: { $in: false } }),
     Error,
@@ -112,7 +107,7 @@ test("utils sqlConditionString - $in array", () => {
   );
 });
 
-test("utils sqlConditionString - build() return string", () => {
+Deno.test("utils sqlConditionString - build() return string", () => {
   assertThrows(
     () => sqlConditionStrings({ a: { $notIn: new TestQuery2() } }),
     AssertionError,
@@ -120,7 +115,7 @@ test("utils sqlConditionString - build() return string", () => {
   );
 });
 
-test("utils sqlConditionString - $notIn array", () => {
+Deno.test("utils sqlConditionString - $notIn array", () => {
   assertThrows(
     () => sqlConditionStrings({ a: { $notIn: false } }),
     Error,
@@ -128,7 +123,7 @@ test("utils sqlConditionString - $notIn array", () => {
   );
 });
 
-test("utils sqlFormat - ? format", () => {
+Deno.test("utils sqlFormat - ? format", () => {
   assertEquals(
     sqlFormat("a=? AND ??=? AND ??? AND ??? AND d=?", [
       123,
@@ -142,7 +137,7 @@ test("utils sqlFormat - ? format", () => {
   );
 });
 
-test("utils sqlFormat - number error", () => {
+Deno.test("utils sqlFormat - number error", () => {
   assertThrows(
     () => sqlFormat("???", [123]),
     Error,
@@ -150,7 +145,7 @@ test("utils sqlFormat - number error", () => {
   );
 });
 
-test("utils sqlFormat - boolean error", () => {
+Deno.test("utils sqlFormat - boolean error", () => {
   assertThrows(
     () => sqlFormat("???", [false]),
     Error,
@@ -158,7 +153,7 @@ test("utils sqlFormat - boolean error", () => {
   );
 });
 
-test("utils sqlFormat - object error", () => {
+Deno.test("utils sqlFormat - object error", () => {
   assertThrows(
     () => sqlFormat("???", [new TestQuery2()]),
     AssertionError,
@@ -166,7 +161,7 @@ test("utils sqlFormat - object error", () => {
   );
 });
 
-test("utils sqlFormat - :1 format", () => {
+Deno.test("utils sqlFormat - :1 format", () => {
   assertEquals(
     sqlFormatObject("a=:1 AND ::2=:3 AND :::4 AND :::5 AND d=:6", {
       "1": 123,
@@ -180,7 +175,7 @@ test("utils sqlFormat - :1 format", () => {
   );
 });
 
-test("utils sqlFormat - object error", () => {
+Deno.test("utils sqlFormat - object error", () => {
   assertThrows(
     () => sqlFormatObject(":::a", { a: 123 }),
     Error,
@@ -188,7 +183,7 @@ test("utils sqlFormat - object error", () => {
   );
 });
 
-test("utils sqlFormat - boolean error ", () => {
+Deno.test("utils sqlFormat - boolean error ", () => {
   assertThrows(
     () => sqlFormatObject(":::a", { a: false }),
     Error,
@@ -196,7 +191,7 @@ test("utils sqlFormat - boolean error ", () => {
   );
 });
 
-test("utils sqlFormat - class error", () => {
+Deno.test("utils sqlFormat - class error", () => {
   assertThrows(
     () => sqlFormatObject(":::a", { a: new TestQuery2() }),
     AssertionError,
@@ -204,27 +199,27 @@ test("utils sqlFormat - class error", () => {
   );
 });
 
-test("utils sqlFormat - empty object", () => {
+Deno.test("utils sqlFormat - empty object", () => {
   assertEquals(sqlFormatObject(":a", {}), ":a");
 });
 
-test("utils sqlFormat - null info", () => {
+Deno.test("utils sqlFormat - null info", () => {
   assertEquals(sqlFormatObject(":a"), ":a");
 });
 
-test("utils sqlUpdateString - $incr", () => {
+Deno.test("utils sqlUpdateString - $incr", () => {
   assertEquals(sqlUpdateString({ a: { $incr: 123 } }), "`a`=`a`+(123)");
 });
 
-test("utils sqlUpdateString - $decr", () => {
+Deno.test("utils sqlUpdateString - $decr", () => {
   assertEquals(sqlUpdateString({ a: { $decr: 123 } }), "`a`=`a`-(123)");
 });
 
-test("utils sqlUpdateString - $raw", () => {
+Deno.test("utils sqlUpdateString - $raw", () => {
   assertEquals(sqlUpdateString({ a: { $raw: "now()" } }), "`a`=now()");
 });
 
-test("utils sqlUpdateString - $xxx error", () => {
+Deno.test("utils sqlUpdateString - $xxx error", () => {
   assertThrows(
     () => sqlUpdateString({ a: { $xxx: 123 } }),
     Error,

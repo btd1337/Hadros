@@ -1,13 +1,13 @@
-import { assert } from "./deps.ts";
 import * as utils from "./utils.ts";
 import {
-  DataRow,
-  QueryOptionsParams,
   AdvancedCondition,
   AdvancedUpdate,
+  DataRow,
+  QueryOptionsParams,
   RawCondition,
 } from "./common.ts";
 import { Expression } from "./expr.ts";
+import { assert } from "assert";
 
 export class QueryBuilder<Q = DataRow, R = any> {
   //////////////////////////////////////////////////////////////////////////////

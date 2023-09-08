@@ -1,27 +1,22 @@
+import { AssertionError, assertStrictEquals, assertThrows } from "assert";
 import Q from "./mod.ts";
-import {
-  test,
-  assertStrictEq,
-  assertThrows,
-  AssertionError,
-} from "./test_deps.ts";
 
-test("query format - simple", () => {
-  assertStrictEq(Q.table("test1").format('"a"'), '"a"');
+Deno.test("query format - simple", () => {
+  assertStrictEquals(Q.table("test1").format('"a"'), '"a"');
 });
-test("query format - ?", () => {
-  assertStrictEq(Q.table("test1").format("a=?", [0]), "a=0");
+Deno.test("query format - ?", () => {
+  assertStrictEquals(Q.table("test1").format("a=?", [0]), "a=0");
 });
-test("query format - :", () => {
-  assertStrictEq(Q.table("test1").format("a=:v", { v: 0 }), "a=0");
+Deno.test("query format - :", () => {
+  assertStrictEquals(Q.table("test1").format("a=:v", { v: 0 }), "a=0");
 });
 
-test("query select - with filed", () => {
+Deno.test("query select - with filed", () => {
   const sql = Q.table("test1").select("name", "age").build();
   // utils.debug(sql);
-  assertStrictEq(sql, "SELECT `name`, `age` FROM `test1`");
+  assertStrictEquals(sql, "SELECT `name`, `age` FROM `test1`");
 });
-test("query select - where object", () => {
+Deno.test("query select - where object", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -30,12 +25,12 @@ test("query select - where object", () => {
     })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456",
   );
 });
-test("query select - where object with params", () => {
+Deno.test("query select - where object with params", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where("`a`=:a AND `b`=:b", {
@@ -44,12 +39,12 @@ test("query select - where object with params", () => {
     })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456",
   );
 });
-test("query select - where and", () => {
+Deno.test("query select - where and", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -60,23 +55,23 @@ test("query select - where and", () => {
     })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456",
   );
 });
-test("query select - where with array", () => {
+Deno.test("query select - where with array", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where("`a`=? AND `b`=?", [123, 456])
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456",
   );
 });
-test("query select - limit", () => {
+Deno.test("query select - limit", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -86,12 +81,12 @@ test("query select - limit", () => {
     .limit(10)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10",
   );
 });
-test("query select - skip", () => {
+Deno.test("query select - skip", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -101,12 +96,12 @@ test("query select - skip", () => {
     .skip(10)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10,18446744073709551615",
   );
 });
-test("query select - skip and limit", () => {
+Deno.test("query select - skip and limit", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -117,12 +112,12 @@ test("query select - skip and limit", () => {
     .limit(20)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10,20",
   );
 });
-test("query select - orderBy", () => {
+Deno.test("query select - orderBy", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -134,12 +129,12 @@ test("query select - orderBy", () => {
     .orderBy("`a` DESC, `b` ASC")
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20",
   );
 });
-test("query select - multi-orderBy", () => {
+Deno.test("query select - multi-orderBy", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -151,12 +146,12 @@ test("query select - multi-orderBy", () => {
     .orderBy("`a` ?, `b` ?", ["DESC", "ASC"])
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20",
   );
 });
-test("query select - and", () => {
+Deno.test("query select - and", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -170,12 +165,12 @@ test("query select - and", () => {
     .orderBy("`a` ?, `b` ?", ["DESC", "ASC"])
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20",
   );
 });
-test("query select - selectDistinct", () => {
+Deno.test("query select - selectDistinct", () => {
   const sql = Q.table("test1")
     .selectDistinct("name", "age")
     .where({
@@ -189,13 +184,13 @@ test("query select - selectDistinct", () => {
     .orderBy("`a` ?, `b` ?", ["DESC", "ASC"])
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT DISTINCT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20",
   );
 });
 
-test("query groupBy - filed", () => {
+Deno.test("query groupBy - filed", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -206,12 +201,12 @@ test("query groupBy - filed", () => {
     .groupBy("name")
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 GROUP BY `name` LIMIT 10,20",
   );
 });
-test("query groupBy - having", () => {
+Deno.test("query groupBy - having", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -223,13 +218,13 @@ test("query groupBy - having", () => {
     .having("COUNT(`a`)>?", [789])
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a`=123 GROUP BY `a`, `b` HAVING COUNT(`a`)>789 LIMIT 10,20",
   );
 });
 
-test("query count - as", () => {
+Deno.test("query count - as", () => {
   const sql = Q.table("test1")
     .count("c")
     .where({
@@ -238,12 +233,12 @@ test("query count - as", () => {
     })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT COUNT(*) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789",
   );
 });
-test("query count - limit", () => {
+Deno.test("query count - limit", () => {
   const sql = Q.table("test1")
     .count("c")
     .where({
@@ -253,12 +248,12 @@ test("query count - limit", () => {
     .limit(1)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT COUNT(*) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789 LIMIT 1",
   );
 });
-test("query count - count()", () => {
+Deno.test("query count - count()", () => {
   const sql = Q.table("test1")
     .count()
     .where({
@@ -268,12 +263,12 @@ test("query count - count()", () => {
     .limit(1)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT COUNT(*) AS `count` FROM `test1` WHERE `a`=456 AND `b`=789 LIMIT 1",
   );
 });
-test("query count - DISTINCT", () => {
+Deno.test("query count - DISTINCT", () => {
   const sql = Q.table("test1")
     .count("c", "DISTINCT `openid`")
     .where({
@@ -283,13 +278,13 @@ test("query count - DISTINCT", () => {
     .limit(1)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT COUNT(DISTINCT `openid`) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789 LIMIT 1",
   );
 });
 
-test("query insert - object", () => {
+Deno.test("query insert - object", () => {
   const sql = Q.table("test1")
     .insert({
       a: 123,
@@ -297,9 +292,9 @@ test("query insert - object", () => {
     })
     .build();
   // utils.debug(sql);
-  assertStrictEq(sql, "INSERT INTO `test1` (`a`, `b`) VALUES (123, 456)");
+  assertStrictEquals(sql, "INSERT INTO `test1` (`a`, `b`) VALUES (123, 456)");
 });
-test("query insert - array", () => {
+Deno.test("query insert - array", () => {
   const sql = Q.table("test1")
     .insert([
       {
@@ -313,13 +308,13 @@ test("query insert - array", () => {
     ])
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "INSERT INTO `test1` (`a`, `b`) VALUES (123, 456),\n(789, 110)",
   );
 });
 
-test("query update - object", () => {
+Deno.test("query update - object", () => {
   const sql = Q.table("test1")
     .update({
       a: 123,
@@ -328,24 +323,24 @@ test("query update - object", () => {
     .orderBy("a ASC")
     .build();
   // utils.debug(sql);
-  assertStrictEq(sql, "UPDATE `test1` SET `a`=123, `b`=456 ORDER BY a ASC");
+  assertStrictEquals(sql, "UPDATE `test1` SET `a`=123, `b`=456 ORDER BY a ASC");
 });
-test("query update - paramas array", () => {
+Deno.test("query update - paramas array", () => {
   const sql = Q.table("test1").update("a=?, b=?", [123, 456]).build();
   // utils.debug(sql);
-  assertStrictEq(sql, "UPDATE `test1` SET a=123, b=456");
+  assertStrictEquals(sql, "UPDATE `test1` SET a=123, b=456");
 });
-test("query update - paramas object", () => {
+Deno.test("query update - paramas object", () => {
   const sql = Q.table("test1").update("a=:a, b=:b", { a: 123, b: 456 }).build();
   // utils.debug(sql);
-  assertStrictEq(sql, "UPDATE `test1` SET a=123, b=456");
+  assertStrictEquals(sql, "UPDATE `test1` SET a=123, b=456");
 });
-test("query update - string", () => {
+Deno.test("query update - string", () => {
   const sql = Q.table("test1").update("`a`=123, b=456").build();
   // utils.debug(sql);
-  assertStrictEq(sql, "UPDATE `test1` SET `a`=123, b=456");
+  assertStrictEquals(sql, "UPDATE `test1` SET `a`=123, b=456");
 });
-test("query update - limit", () => {
+Deno.test("query update - limit", () => {
   const sql = Q.table("test1")
     .update({
       a: 123,
@@ -354,9 +349,9 @@ test("query update - limit", () => {
     .limit(12)
     .build();
   // utils.debug(sql);
-  assertStrictEq(sql, "UPDATE `test1` SET `a`=123, `b`=456 LIMIT 12");
+  assertStrictEquals(sql, "UPDATE `test1` SET `a`=123, `b`=456 LIMIT 12");
 });
-test("query update - where", () => {
+Deno.test("query update - where", () => {
   const sql = Q.table("test1")
     .update({
       a: 123,
@@ -368,12 +363,12 @@ test("query update - where", () => {
     .limit(12)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12",
   );
 });
-test("query update - set", () => {
+Deno.test("query update - set", () => {
   const sql = Q.table("test1")
     .update({
       a: 123,
@@ -387,12 +382,12 @@ test("query update - set", () => {
     .limit(12)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12",
   );
 });
-test("query update - set", () => {
+Deno.test("query update - set", () => {
   const sql = Q.table("test1")
     .update()
     .set({
@@ -405,12 +400,12 @@ test("query update - set", () => {
     .limit(12)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12",
   );
 });
-test("query update - query type error", () => {
+Deno.test("query update - query type error", () => {
   assertThrows(
     () => {
       Q.table("test1").set({ a: 1 }).build();
@@ -419,7 +414,7 @@ test("query update - query type error", () => {
     "query type must be UPDATE, please call .update() before",
   );
 });
-test("query update - connot be empty", () => {
+Deno.test("query update - connot be empty", () => {
   assertThrows(
     () => {
       Q.table("test1").update().build();
@@ -428,7 +423,7 @@ test("query update - connot be empty", () => {
     "update data connot be empty",
   );
 });
-test("query update - empty object", () => {
+Deno.test("query update - empty object", () => {
   assertThrows(
     () => {
       Q.table("table")
@@ -443,7 +438,7 @@ test("query update - empty object", () => {
     "update data connot be empty",
   );
 });
-test("query update - empty object and set", () => {
+Deno.test("query update - empty object and set", () => {
   const sql = Q.table("test1")
     .update({})
     .set({ a: 456 })
@@ -453,22 +448,22 @@ test("query update - empty object and set", () => {
     .limit(456)
     .build();
   // utils.debug(sql);
-  assertStrictEq(sql, "UPDATE `test1` SET `a`=456 WHERE `a`=123 LIMIT 456");
+  assertStrictEquals(sql, "UPDATE `test1` SET `a`=456 WHERE `a`=123 LIMIT 456");
 });
 
-test("query insert or update - onDuplicateKeyUpdate", () => {
+Deno.test("query insert or update - onDuplicateKeyUpdate", () => {
   const sql = Q.table("test1")
     .insert({ a: 123, b: 456 })
     .onDuplicateKeyUpdate()
     .set({ a: "xxx" })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "INSERT INTO `test1` (`a`, `b`) VALUES (123, 456) ON DUPLICATE KEY UPDATE `a`='xxx'",
   );
 });
-test("query insert or update - onDuplicateKeyUpdate error", () => {
+Deno.test("query insert or update - onDuplicateKeyUpdate error", () => {
   assertThrows(
     () =>
       Q.table("test1")
@@ -483,7 +478,7 @@ test("query insert or update - onDuplicateKeyUpdate error", () => {
     "onDuplicateKeyUpdate() must inserted one row, but accutal is 2 rows",
   );
 });
-test("query insert or update - onDuplicateKeyUpdate insert only", () => {
+Deno.test("query insert or update - onDuplicateKeyUpdate insert only", () => {
   assertThrows(
     () =>
       Q.table("test1")
@@ -496,35 +491,35 @@ test("query insert or update - onDuplicateKeyUpdate insert only", () => {
   );
 });
 
-test("query delete - all", () => {
+Deno.test("query delete - all", () => {
   const sql = Q.table("test1").delete().build();
   // utils.debug(sql);
-  assertStrictEq(sql, "DELETE FROM `test1`");
+  assertStrictEquals(sql, "DELETE FROM `test1`");
 });
-test("query delete - where", () => {
+Deno.test("query delete - where", () => {
   const sql = Q.table("test1").delete().where("`a`=2").build();
   // utils.debug(sql);
-  assertStrictEq(sql, "DELETE FROM `test1` WHERE `a`=2");
+  assertStrictEquals(sql, "DELETE FROM `test1` WHERE `a`=2");
 });
-test("query delete - limit", () => {
+Deno.test("query delete - limit", () => {
   const sql = Q.table("test1").delete().where("`a`=2").limit(1).build();
   // utils.debug(sql);
-  assertStrictEq(sql, "DELETE FROM `test1` WHERE `a`=2 LIMIT 1");
+  assertStrictEquals(sql, "DELETE FROM `test1` WHERE `a`=2 LIMIT 1");
 });
 
-test("query sql - string build", () => {
+Deno.test("query sql - string build", () => {
   const sql = Q.table("test1")
     .sql(
       'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`',
     )
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`',
   );
 });
-test("query sql - limit", () => {
+Deno.test("query sql - limit", () => {
   const sql = Q.table("test1")
     .sql(
       'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$limit',
@@ -532,12 +527,12 @@ test("query sql - limit", () => {
     .limit(10)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 10',
   );
 });
-test("query sql - offset", () => {
+Deno.test("query sql - offset", () => {
   const sql = Q.table("test1")
     .sql(
       'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$limit',
@@ -546,12 +541,12 @@ test("query sql - offset", () => {
     .offset(5)
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 5,10',
   );
 });
-test("query sql - order", () => {
+Deno.test("query sql - order", () => {
   const sql = Q.table("test1")
     .sql(
       'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$orderBy :$limit',
@@ -561,12 +556,12 @@ test("query sql - order", () => {
     .orderBy("`id` ASC")
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` ORDER BY `id` ASC LIMIT 5,10',
   );
 });
-test("query sql - fields", () => {
+Deno.test("query sql - fields", () => {
   const sql = Q.table("test1")
     .sql("SELECT :$fields FROM `test1`")
     .fields("a", "b", "c")
@@ -575,10 +570,10 @@ test("query sql - fields", () => {
     .orderBy("`id` ASC")
     .build();
   // utils.debug(sql);
-  assertStrictEq(sql, "SELECT `a`, `b`, `c` FROM `test1`");
+  assertStrictEquals(sql, "SELECT `a`, `b`, `c` FROM `test1`");
 });
 
-test("query options - offset limit", () => {
+Deno.test("query options - offset limit", () => {
   const sql = Q.table("test1")
     .select()
     .options({
@@ -590,12 +585,12 @@ test("query options - offset limit", () => {
     })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `id`, `name` FROM `test1` GROUP BY `name` ORDER BY `id` DESC LIMIT 1,2",
   );
 });
-test("query options - skip limit", () => {
+Deno.test("query options - skip limit", () => {
   const sql = Q.table("test1")
     .select()
     .options({
@@ -607,25 +602,25 @@ test("query options - skip limit", () => {
     })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `id`, `name` FROM `test1` GROUP BY `name` ORDER BY `id` DESC LIMIT 1,2",
   );
 });
 
-test("query where(condition): condition for modify operation cannot be empty", () => {
+Deno.test("query where(condition): condition for modify operation cannot be empty", () => {
   // SELECT 操作可以为空
   const sql = Q.table("test1").select("name", "age").where({}).build();
   // utils.debug(sql);
-  assertStrictEq(sql, "SELECT `name`, `age` FROM `test1`");
+  assertStrictEquals(sql, "SELECT `name`, `age` FROM `test1`");
 });
-test("query where(condition): condition for modify operation cannot be empty", () => {
+Deno.test("query where(condition): condition for modify operation cannot be empty", () => {
   const sql = Q.table("test1").select("name", "age").where("   ").build();
   // utils.debug(sql);
-  assertStrictEq(sql, "SELECT `name`, `age` FROM `test1`");
+  assertStrictEquals(sql, "SELECT `name`, `age` FROM `test1`");
 });
 // 其他操作不能为空
-test("query where(condition): condition for modify operation cannot be empty", () => {
+Deno.test("query where(condition): condition for modify operation cannot be empty", () => {
   assertThrows(
     () => {
       const sql = Q.table("test1").update({ a: 123 }).where({}).build();
@@ -635,7 +630,7 @@ test("query where(condition): condition for modify operation cannot be empty", (
     "condition for modify operation cannot be empty",
   );
 });
-test("query where(condition): condition for modify operation cannot be empty", () => {
+Deno.test("query where(condition): condition for modify operation cannot be empty", () => {
   assertThrows(
     () => {
       const sql = Q.table("test1").delete().where("   ").build();
@@ -646,7 +641,7 @@ test("query where(condition): condition for modify operation cannot be empty", (
   );
 });
 
-test("query where(condition): condition key cannot be undefined", () => {
+Deno.test("query where(condition): condition key cannot be undefined", () => {
   assertThrows(
     () => {
       const sql = Q.table("test1")
@@ -659,7 +654,7 @@ test("query where(condition): condition key cannot be undefined", () => {
     "found undefined value for condition keys b; it may caused unexpected errors",
   );
 });
-test("query where(condition): condition key cannot be undefined", () => {
+Deno.test("query where(condition): condition key cannot be undefined", () => {
   assertThrows(
     () => {
       const sql = Q.table("test1")
@@ -673,7 +668,7 @@ test("query where(condition): condition key cannot be undefined", () => {
   );
 });
 
-test("query where(condition): support for $in & $like", () => {
+Deno.test("query where(condition): support for $in & $like", () => {
   const sql = Q.table("test1")
     .select("name", "age")
     .where({
@@ -685,12 +680,12 @@ test("query where(condition): support for $in & $like", () => {
     .orderBy("`a` DESC, `b` ASC")
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT `name`, `age` FROM `test1` WHERE `a` IN (1, 2, 3) AND `b` LIKE '%hello%' ORDER BY `a` DESC, `b` ASC LIMIT 10,20",
   );
 });
-test("query where(condition): support for $in & $like", () => {
+Deno.test("query where(condition): support for $in & $like", () => {
   assertThrows(
     () => {
       const sql = Q.table("test1")
@@ -703,7 +698,7 @@ test("query where(condition): support for $in & $like", () => {
     "value for condition type $in in field a must be an array",
   );
 });
-test("query where(condition): support for $in & $like", () => {
+Deno.test("query where(condition): support for $in & $like", () => {
   assertThrows(
     () => {
       const sql = Q.table("test1")
@@ -716,7 +711,7 @@ test("query where(condition): support for $in & $like", () => {
     "value for condition type $like in a must be a string",
   );
 });
-test("query where(condition): support for $in & $like", () => {
+Deno.test("query where(condition): support for $in & $like", () => {
   const sql = Q.table("test1")
     .select()
     .where({
@@ -736,13 +731,13 @@ test("query where(condition): support for $in & $like", () => {
     })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "SELECT * FROM `test1` WHERE `a`=1 AND `b`>2 AND `c`>=3 AND `d`<4 AND `e`<=5 AND `f` IS NULL AND `g` IS NOT NULL AND `h` LIKE 'a' AND `i` NOT LIKE 'b' AND `j` IN ('c') AND `k` NOT IN ('d') AND `l`<>'x' AND `m`=CURRENT_TIMESTAMP",
   );
 });
 
-test("query update(data): support for $incr", () => {
+Deno.test("query update(data): support for $incr", () => {
   const sql = Q.table("test1")
     .update({
       a: { $incr: 1 },
@@ -752,12 +747,12 @@ test("query update(data): support for $incr", () => {
     .where({ a: 2 })
     .build();
   // utils.debug(sql);
-  assertStrictEq(
+  assertStrictEquals(
     sql,
     "UPDATE `test1` SET `a`=`a`+(1), `b`=`b`-(2), `c`=CURRENT_TIMESTAMP WHERE `a`=2",
   );
 });
 
-test("query build()", () => {
+Deno.test("query build()", () => {
   assertThrows(() => Q.table("test1").build(), Error, 'invalid query type ""');
 });
