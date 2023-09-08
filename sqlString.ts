@@ -1,7 +1,6 @@
-
 const ID_GLOBAL_REGEXP = /`/g;
 const QUAL_GLOBAL_REGEXP = /\./g;
-const CHARS_GLOBAL_REGEXP = /[\0\b\t\n\r\x1a\"\'\\]/g;
+const CHARS_GLOBAL_REGEXP = /[\0\b\t\n\r\x1a"'\\]/g;
 const CHARS_ESCAPE_MAP = {
   "\0": "\\0",
   "\b": "\\b",
