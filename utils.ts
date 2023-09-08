@@ -156,7 +156,7 @@ export function sqlEscape(value: string): string {
  * ```
  */
 export function sqlEscapeId(value: string): string {
-  // MySQL: return SqlString.escapeId(value);
+  // MySQL: return SqlString.escapeId(value); // TODO: To allow usage with MySQL
   return postgresEscapeCheck(value);
 }
 
@@ -176,9 +176,13 @@ export function sqlEscapeId(value: string): string {
 function postgresEscapeCheck(value: string): string {
   // Check if the value contains double quotes, which can be a security risk
   if (value.includes('"')) {
-    throw new Error(
-      "The value contains double quotes, which may pose a security risk.",
-    );
+    if (value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+      value = value.substring(1, value.length - 1);
+    } else {
+      throw new Error(
+        "The value contains double quotes, which may pose a security risk.",
+      );
+    }
   }
 
   // Use double quotes only if the identifier requires them

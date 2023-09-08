@@ -2,7 +2,8 @@
 
 # Hadros
 
-Hadros is a Postgres SQL Builder for Deno based on @yourtion/deno-sql
+Hadros is a Postgres SQL builder for Deno based on @yourtion/deno-sql that is
+focused on MySQL
 
 ## Usage
 
@@ -131,14 +132,32 @@ table("test")
   )
   .build();
 // SELECT * FROM `test` WHERE (a=123 OR `b`=456 AND `c` IN (789) OR d=666)
+```
 
-// query with mysql
-const client = await new Client().connect({});
-const data = await query(
-  client,
-  table("test").select("*").limit(1),
+## Usege with Postgres
+
+```ts
+import { Client } from "https://deno.land/x/postgres@v0.17.0/mod.ts";
+
+const client = new Client({
+  user: "user",
+  database: "test",
+  hostname: "localhost",
+  port: 5432,
+});
+await client.connect();
+
+const array_result = await client.queryArray(
+  table("People").select("id", "name").build(),
 );
-console.log(data);
+console.log(array_result.rows); // [[1, 'Carlos'], [2, 'John'], ...]
+
+const object_result = await client.queryObject(
+  table("People").select("id", "name").build(),
+);
+console.log(object_result.rows); // [{id: 1, name: 'Carlos'}, {id: 2, name: 'John'}, ...]
+
+await client.end();
 ```
 
 ## License
