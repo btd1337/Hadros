@@ -156,7 +156,38 @@ export function sqlEscape(value: string): string {
  * ```
  */
 export function sqlEscapeId(value: string): string {
-  return SqlString.escapeId(value);
+  // MySQL: return SqlString.escapeId(value);
+  return postgresEscapeCheck(value);
+}
+
+/**
+ * Escapes an identifier for safe use in PostgreSQL queries.
+ * @param value - The identifier to be escaped.
+ * @returns The escaped identifier as a string.
+ * @throws Throws an error if the value contains double quotes.
+ *
+ * @example
+ * ```typescript
+ * const identifier = "column_name";
+ * const escapedIdentifier = postgresEscapeCheck(identifier);
+ * console.log(escapedIdentifier); // Outputs: "column_name"
+ * ```
+ */
+function postgresEscapeCheck(value: string): string {
+  // Check if the value contains double quotes, which can be a security risk
+  if (value.includes('"')) {
+    throw new Error(
+      "The value contains double quotes, which may pose a security risk.",
+    );
+  }
+
+  // Use double quotes only if the identifier requires them
+  if (/[^a-zA-Z0-9_]/.test(value) || /[A-Z]/.test(value) || /\s/.test(value)) {
+    return `"${value}"`;
+  }
+
+  // Otherwise, return the identifier without double quotes
+  return value;
 }
 
 /**
