@@ -1,4 +1,4 @@
-import { assertStrictEquals, assertThrows } from "assert";
+import { assertStrictEquals, assertThrows } from "./deps.ts";
 import SqlString from "./sqlString.ts";
 
 Deno.test("SqlString escapeId - value is quoted", () => {

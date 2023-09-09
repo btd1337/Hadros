@@ -1,4 +1,4 @@
-import { AssertionError, assertStrictEquals, assertThrows } from "assert";
+import { AssertionError, assertStrictEquals, assertThrows } from "./deps.ts";
 import Q from "./mod.ts";
 import Messages from "./messages.ts";
 

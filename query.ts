@@ -7,7 +7,7 @@ import {
   RawCondition,
 } from "./common.ts";
 import { Expression } from "./expr.ts";
-import { assert } from "assert";
+import { assert } from "./deps.ts";
 import Messages from "./messages.ts";
 
 /**

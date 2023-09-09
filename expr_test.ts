@@ -1,4 +1,4 @@
-import { assertStrictEquals } from "assert";
+import { assertStrictEquals } from "./deps.ts";
 import Q from "./mod.ts";
 
 Deno.test("expr and", () => {

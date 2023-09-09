@@ -1,4 +1,4 @@
-import { assertStrictEquals } from "assert";
+import { assertStrictEquals } from "./deps.ts";
 import SqlString from "./sqlString.ts";
 import Messages from "./messages.ts";
 

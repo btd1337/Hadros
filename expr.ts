@@ -1,6 +1,6 @@
 import * as utils from "./utils.ts";
 import { AdvancedCondition, DataRow } from "./common.ts";
-import { assert } from "assert";
+import { assert } from "./deps.ts";
 import Messages from "./messages.ts";
 
 /**
